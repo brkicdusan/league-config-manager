@@ -5,3 +5,4 @@ edition = "2021"
 
 [dependencies]
 iced = { version = "0.12.1" }
+rfd = "0.14.1"
