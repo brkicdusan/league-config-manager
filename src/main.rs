@@ -35,7 +35,10 @@ impl Window {
     fn set_cfg(&mut self, location: &Path) {
         if let Ok(cfg) = Cfg::new(location) {
             self.cfg = Some(cfg)
+        } else {
+            self.cfg = None
         }
+
         // TODO:error handling missing
     }
 }
