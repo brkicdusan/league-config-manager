@@ -1,11 +1,15 @@
 #![windows_subsystem = "windows"]
 
+mod config;
+use config::Config;
+
 use std::path::PathBuf;
 
+use config::get_config;
 use iced::{
     executor,
     widget::{button, column, container, row, text, text_input},
-    Application, Command, Sandbox, Settings, Theme,
+    Application, Command, Settings, Theme,
 };
 
 fn main() -> Result<(), iced::Error> {
@@ -19,16 +23,7 @@ enum Message {
 }
 
 struct Window {
-    config_path: Option<PathBuf>,
-}
-
-impl Window {
-    fn config_path(&self) -> &str {
-        match &self.config_path {
-            Some(path) => path.to_str().expect("Should always work"),
-            _ => "",
-        }
-    }
+    config: Config,
 }
 
 impl Application for Window {
@@ -40,7 +35,12 @@ impl Application for Window {
     type Flags = ();
 
     fn new(_flags: Self::Flags) -> (Window, iced::Command<Message>) {
-        (Window { config_path: None }, Command::none())
+        (
+            Window {
+                config: get_config(),
+            },
+            Command::none(),
+        )
     }
 
     fn title(&self) -> String {
@@ -51,19 +51,19 @@ impl Application for Window {
         match message {
             Message::FindLocation => Command::perform(find_config(), Message::SetLocation),
             Message::SetLocation(Ok(location)) => {
-                self.config_path = Some(location);
+                self.config.set_path(Some(location));
                 Command::none()
             }
             Message::SetLocation(Err(error)) => {
                 println!("{:?}", error);
-                //TODO: error handling
+                // TODO: error handling
                 Command::none()
             }
         }
     }
 
     fn view(&self) -> iced::Element<'_, Self::Message> {
-        let config_path = text_input("Config not found", self.config_path()).padding(10);
+        let config_path = text_input("Config not found", self.config.cfg_path()).padding(10);
         let location_btn = button(text("Find config"))
             .padding(10)
             .on_press(Message::FindLocation);
@@ -91,8 +91,7 @@ enum Error {
 async fn find_config() -> Result<std::path::PathBuf, Error> {
     let handle = rfd::AsyncFileDialog::new()
         .set_title("Find settings location")
-        // .pick_folder()
-        .pick_file()
+        .pick_folder()
         .await
         .ok_or(Error::DialogClosed)?;
     Ok(handle.path().to_owned())
