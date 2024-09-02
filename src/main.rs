@@ -69,7 +69,7 @@ impl Application for Window {
 
     fn view(&self) -> iced::Element<'_, Self::Message> {
         let config_path = text_input("Config not found", self.config.cfg_path()).padding(10);
-        let location_btn = button(text("Find config"))
+        let location_btn = button(text("Find \"League of Legends\" folder"))
             .padding(10)
             .on_press(Message::FindLocation);
         let location = row![config_path, location_btn]
@@ -97,7 +97,7 @@ enum Error {
 /// When dialog closes return Error::DialogClosed
 async fn find_config() -> Result<std::path::PathBuf, Error> {
     let handle = rfd::AsyncFileDialog::new()
-        .set_title("Find settings location")
+        .set_title("Find \"League of Legends\" folder")
         .pick_folder()
         .await
         .ok_or(Error::DialogClosed)?;

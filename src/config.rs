@@ -11,7 +11,6 @@ pub fn get_config_path() -> PathBuf {
     let proj_dir =
         ProjectDirs::from("", "", "league_config_manager").expect("This should always resolve");
     let dir = proj_dir.data_dir().to_path_buf();
-    // TODO:napravi folder ako ne postoji
     fs::create_dir_all(&dir).expect("Should always create these dirs");
     dir.join("config.json")
 }
@@ -74,6 +73,8 @@ impl Config {
 
     pub fn set_readonly(&mut self, value: bool) {
         self.readonly = value;
+        // TODO:after implementing locating file i should add that toggle here too and also maybe
+        // disable checkbox when there is no config (path is none => no checkbox)
         self.update();
     }
 
