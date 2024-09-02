@@ -37,13 +37,12 @@ impl Cfg {
 
     fn set_readonly_path(&self, p: &PathBuf, value: bool) {
         let f = File::open(p).expect("File should always exist");
-        let mut perms = f.metadata().unwrap().permissions();
+        let mut perms = f.metadata().expect("Error reading meatadata").permissions();
         perms.set_readonly(value);
-        f.set_permissions(perms)
-            .expect("Problem setting premissions");
+        std::fs::set_permissions(p, perms).unwrap();
     }
 
-    pub fn set_readonly(&self, value: bool) {
+    pub fn set_readonly(&self, value: bool){
         self.set_readonly_path(&self.game, value);
         self.set_readonly_path(&self.settings, value);
     }
