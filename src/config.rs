@@ -72,6 +72,15 @@ impl Config {
         self.update();
     }
 
+    pub fn set_readonly(&mut self, value: bool) {
+        self.readonly = value;
+        self.update();
+    }
+
+    pub fn get_readonly(&self) -> bool {
+        self.readonly
+    }
+
     pub fn update(&self) {
         set_config(self);
     }

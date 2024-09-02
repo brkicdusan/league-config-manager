@@ -8,7 +8,7 @@ use std::path::PathBuf;
 use config::get_config;
 use iced::{
     executor,
-    widget::{button, column, container, row, text, text_input},
+    widget::{button, column, container, row, text, text_input, Checkbox},
     Application, Command, Settings, Theme,
 };
 
@@ -20,6 +20,7 @@ fn main() -> Result<(), iced::Error> {
 enum Message {
     FindLocation,
     SetLocation(Result<PathBuf, Error>),
+    SetReadonly(bool),
 }
 
 struct Window {
@@ -59,6 +60,10 @@ impl Application for Window {
                 // TODO: error handling
                 Command::none()
             }
+            Message::SetReadonly(readonly) => {
+                self.config.set_readonly(readonly);
+                Command::none()
+            }
         }
     }
 
@@ -70,8 +75,10 @@ impl Application for Window {
         let location = row![config_path, location_btn]
             .align_items(iced::Alignment::Center)
             .spacing(10);
+        let cb = Checkbox::new("Lock settings", self.config.get_readonly())
+            .on_toggle(Message::SetReadonly);
 
-        container(column![location])
+        container(column![location, cb])
             .padding(10)
             .center_x()
             .center_y()
