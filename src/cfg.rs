@@ -42,7 +42,7 @@ impl Cfg {
         std::fs::set_permissions(p, perms).unwrap();
     }
 
-    pub fn set_readonly(&self, value: bool){
+    pub fn set_readonly(&self, value: bool) {
         self.set_readonly_path(&self.game, value);
         self.set_readonly_path(&self.settings, value);
     }
