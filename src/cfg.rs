@@ -39,7 +39,8 @@ impl Cfg {
         let f = File::open(p).expect("File should always exist");
         let mut perms = f.metadata().unwrap().permissions();
         perms.set_readonly(value);
-        f.set_permissions(perms).unwrap();
+        f.set_permissions(perms)
+            .expect("Problem setting premissions");
     }
 
     pub fn set_readonly(&self, value: bool) {
