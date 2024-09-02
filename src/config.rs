@@ -41,7 +41,11 @@ impl Config {
         config
     }
 
-    pub fn cfg_path(&self) -> &str {
+    pub fn get_cfg_path(&self) -> &Option<PathBuf> {
+        &self.cfg_path
+    }
+
+    pub fn path_to_str(&self) -> &str {
         match &self.cfg_path {
             Some(path) => path.to_str().expect("Should always work"),
             _ => "",

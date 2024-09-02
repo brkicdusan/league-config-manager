@@ -49,13 +49,14 @@ impl Application for Window {
     type Flags = ();
 
     fn new(_flags: Self::Flags) -> (Window, iced::Command<Message>) {
-        (
-            Window {
-                config: Config::new(),
-                cfg: None,
-            },
-            Command::none(),
-        )
+        let conf = Config::new();
+        let cfg = if let Ok(c) = Cfg::from_config(&conf) {
+            Some(c)
+        } else {
+            // TODO: error handling
+            None
+        };
+        (Window { config: conf, cfg }, Command::none())
     }
 
     fn title(&self) -> String {
@@ -82,7 +83,7 @@ impl Application for Window {
     }
 
     fn view(&self) -> iced::Element<'_, Self::Message> {
-        let config_path = text_input("Config not found", self.config.cfg_path()).padding(10);
+        let config_path = text_input("Config not found", self.config.path_to_str()).padding(10);
         let location_btn = button(text("Find \"League of Legends\" folder"))
             .padding(10)
             .on_press(Message::FindLocation);
