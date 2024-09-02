@@ -29,6 +29,7 @@ enum Message {
 struct Window {
     config: Config,
     cfg: Option<Cfg>,
+    readonly: bool,
 }
 
 impl Window {
@@ -53,13 +54,20 @@ impl Application for Window {
 
     fn new(_flags: Self::Flags) -> (Window, iced::Command<Message>) {
         let conf = Config::new();
-        let cfg = if let Ok(c) = Cfg::from_config(&conf) {
-            Some(c)
-        } else {
-            // TODO: error handling
-            None
-        };
-        (Window { config: conf, cfg }, Command::none())
+        let mut cfg = None;
+        let mut readonly = false;
+        if let Ok(c) = Cfg::from_config(&conf) {
+            readonly = c.get_readonly();
+            cfg = Some(c);
+        }
+        (
+            Window {
+                config: conf,
+                cfg,
+                readonly,
+            },
+            Command::none(),
+        )
     }
 
     fn title(&self) -> String {
@@ -79,7 +87,10 @@ impl Application for Window {
                 Command::none()
             }
             Message::SetReadonly(readonly) => {
-                self.config.set_readonly(readonly);
+                self.readonly = readonly;
+                if let Some(c) = &self.cfg {
+                    c.set_readonly(readonly);
+                }
                 Command::none()
             }
         }
@@ -93,8 +104,11 @@ impl Application for Window {
         let location = row![config_path, location_btn]
             .align_items(iced::Alignment::Center)
             .spacing(10);
-        let cb = Checkbox::new("Lock settings", self.config.get_readonly())
-            .on_toggle(Message::SetReadonly);
+
+        let mut cb = Checkbox::new("Lock settings", self.readonly);
+        if self.cfg.is_some() {
+            cb = cb.on_toggle(Message::SetReadonly)
+        }
 
         let tmp_text = if let Some(c) = &self.cfg {
             text(c.game.to_str().expect("Should always convert"))

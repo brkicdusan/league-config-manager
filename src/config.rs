@@ -18,7 +18,6 @@ fn get_config_path() -> PathBuf {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Config {
     cfg_path: Option<PathBuf>,
-    readonly: bool,
 }
 
 impl Config {
@@ -53,26 +52,12 @@ impl Config {
     }
 
     fn default() -> Config {
-        Config {
-            cfg_path: None,
-            readonly: false,
-        }
+        Config { cfg_path: None }
     }
 
     pub fn set_path(&mut self, cfg_path: Option<PathBuf>) {
         self.cfg_path = cfg_path;
         self.update();
-    }
-
-    pub fn set_readonly(&mut self, value: bool) {
-        self.readonly = value;
-        // TODO:after implementing locating file i should add that toggle here too and also maybe
-        // disable checkbox when there is no config (path is none => no checkbox)
-        self.update();
-    }
-
-    pub fn get_readonly(&self) -> bool {
-        self.readonly
     }
 
     pub fn set_config(&self) {

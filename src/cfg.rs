@@ -2,6 +2,7 @@ use crate::config::Config;
 
 use crate::error::Error;
 
+use std::fs::File;
 use std::path::Path;
 use std::path::PathBuf;
 
@@ -27,5 +28,22 @@ impl Cfg {
         }
         Err(Error::WrongPath)
         // TODO: error handling
+    }
+
+    pub fn get_readonly(&self) -> bool {
+        let f = File::open(&self.game).expect("File should always exist");
+        f.metadata().unwrap().permissions().readonly()
+    }
+
+    fn set_readonly_path(&self, p: &PathBuf, value: bool) {
+        let f = File::open(p).expect("File should always exist");
+        let mut perms = f.metadata().unwrap().permissions();
+        perms.set_readonly(value);
+        f.set_permissions(perms).unwrap();
+    }
+
+    pub fn set_readonly(&self, value: bool) {
+        self.set_readonly_path(&self.game, value);
+        self.set_readonly_path(&self.settings, value);
     }
 }
