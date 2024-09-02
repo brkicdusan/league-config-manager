@@ -103,3 +103,5 @@ async fn find_config() -> Result<std::path::PathBuf, Error> {
         .ok_or(Error::DialogClosed)?;
     Ok(handle.path().to_owned())
 }
+
+// G:\Riot Games\League of Legends
