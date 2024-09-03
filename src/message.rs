@@ -8,4 +8,5 @@ pub(crate) enum Message {
     SetLocation(Result<PathBuf, Error>),
     SetReadonly(bool),
     AddProfile,
+    RemoveProfile(String),
 }

@@ -1,6 +1,8 @@
-use std::fs;
+use std::{fs, path::PathBuf};
 
-use crate::{cfg::Cfg, config::get_config_dir};
+use iced::widget::{button, horizontal_space, row, text};
+
+use crate::{cfg::Cfg, config::get_config_dir, message::Message};
 
 #[derive(Debug)]
 pub struct Profile {
@@ -51,5 +53,22 @@ impl Profile {
             }
         }
         profiles
+    }
+
+    fn path_to(&self) -> PathBuf {
+        let dir = get_config_dir();
+        dir.join(&self.name)
+    }
+
+    pub fn delete(&self) {
+        let dir = self.path_to();
+        fs::remove_dir_all(dir).unwrap();
+    }
+
+    pub fn get_item(&self) -> iced::widget::Row<'_, Message> {
+        let del_btn = button(text("Remove"))
+            .style(iced::theme::Button::Destructive)
+            .on_press(Message::RemoveProfile(self.name.clone()));
+        row![text(&self.name), horizontal_space(), del_btn]
     }
 }

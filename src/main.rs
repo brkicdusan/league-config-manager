@@ -113,6 +113,16 @@ impl Application for Window {
                 }
                 Command::none()
             }
+            Message::RemoveProfile(s) => {
+                for (i, p) in self.profiles.iter().enumerate() {
+                    if p.get_name() == &s {
+                        p.delete();
+                        self.profiles.remove(i);
+                        break;
+                    }
+                }
+                Command::none()
+            }
         }
     }
 
@@ -130,10 +140,10 @@ impl Application for Window {
             cb = cb.on_toggle(Message::SetReadonly)
         }
 
-        let mut profile_row = row![].align_items(iced::Alignment::Center).spacing(15);
+        let mut profiles = column![].align_items(iced::Alignment::Center).spacing(15);
 
         for p in &self.profiles {
-            profile_row = profile_row.push(text(p.get_name()));
+            profiles = profiles.push(p.get_item());
         }
 
         let mut add_profile = button(text("Add profile"));
@@ -142,7 +152,7 @@ impl Application for Window {
         }
 
         let mut content =
-            column![location, cb, Rule::horizontal(0), profile_row, add_profile].spacing(10);
+            column![location, cb, Rule::horizontal(0), profiles, add_profile].spacing(10);
 
         if let Some(e) = &self.error {
             let error_str = match e {
