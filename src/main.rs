@@ -2,13 +2,18 @@
 
 mod cfg;
 mod config;
+mod dialog;
 mod error;
+mod message;
+mod profile;
 
 use cfg::Cfg;
 use config::Config;
 use error::Error;
+use message::Message;
+use profile::Profile;
 
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 use iced::{
     color, executor, theme,
@@ -20,18 +25,12 @@ fn main() -> Result<(), iced::Error> {
     Window::run(Settings::default())
 }
 
-#[derive(Debug, Clone)]
-enum Message {
-    FindLocation,
-    SetLocation(Result<PathBuf, error::Error>),
-    SetReadonly(bool),
-}
-
 struct Window {
     config: Config,
     cfg: Option<Cfg>,
     readonly: bool,
     error: Option<Error>,
+    profiles: Vec<Profile>,
 }
 
 impl Window {
@@ -63,6 +62,7 @@ impl Application for Window {
         let mut cfg = None;
         let mut readonly = false;
         let mut err = None;
+        let profiles = Profile::get_profiles();
         match Cfg::from_config(&conf) {
             Ok(c) => {
                 readonly = c.get_readonly();
@@ -76,6 +76,7 @@ impl Application for Window {
                 cfg,
                 readonly,
                 error: err,
+                profiles,
             },
             Command::none(),
         )
@@ -86,7 +87,9 @@ impl Application for Window {
     }
     fn update(&mut self, message: Self::Message) -> Command<Message> {
         match message {
-            Message::FindLocation => Command::perform(find_config_dialog(), Message::SetLocation),
+            Message::FindLocation => {
+                Command::perform(dialog::find_config_dialog(), Message::SetLocation)
+            }
             Message::SetLocation(Ok(location)) => {
                 self.set_cfg(&location);
                 self.config.set_path(Some(location));
@@ -100,6 +103,13 @@ impl Application for Window {
                 self.readonly = readonly;
                 if let Some(c) = &self.cfg {
                     c.set_readonly(readonly);
+                }
+                Command::none()
+            }
+            Message::AddProfile => {
+                if let Some(cfg) = &self.cfg {
+                    let new_profile = Profile::new(cfg);
+                    self.profiles.push(new_profile);
                 }
                 Command::none()
             }
@@ -120,7 +130,19 @@ impl Application for Window {
             cb = cb.on_toggle(Message::SetReadonly)
         }
 
-        let mut content = column![location, cb, Rule::horizontal(0)].spacing(10);
+        let mut profile_row = row![].align_items(iced::Alignment::Center).spacing(15);
+
+        for p in &self.profiles {
+            profile_row = profile_row.push(text(p.get_name()));
+        }
+
+        let mut add_profile = button(text("Add profile"));
+        if self.cfg.is_some() {
+            add_profile = add_profile.on_press(Message::AddProfile);
+        }
+
+        let mut content =
+            column![location, cb, Rule::horizontal(0), profile_row, add_profile].spacing(10);
 
         if let Some(e) = &self.error {
             let error_str = match e {
@@ -138,18 +160,3 @@ impl Application for Window {
         container(content).padding(10).center_x().center_y().into()
     }
 }
-
-/// Opens dialog to locate config.
-///
-/// # Errors
-/// When dialog closes return Error::DialogClosed
-async fn find_config_dialog() -> Result<std::path::PathBuf, error::Error> {
-    let handle = rfd::AsyncFileDialog::new()
-        .set_title("Find \"League of Legends\" folder")
-        .pick_folder()
-        .await
-        .ok_or(error::Error::DialogClosed)?;
-    Ok(handle.path().to_owned())
-}
-
-// G:\Riot Games\League of Legends

@@ -7,11 +7,16 @@ use std::{
 use directories::ProjectDirs;
 use serde::{Deserialize, Serialize};
 
-fn get_config_path() -> PathBuf {
+pub fn get_config_dir() -> PathBuf {
     let proj_dir =
         ProjectDirs::from("", "", "league_config_manager").expect("This should always resolve");
     let dir = proj_dir.data_dir().to_path_buf();
     fs::create_dir_all(&dir).expect("Should always create these dirs");
+    dir
+}
+
+pub fn get_config_path() -> PathBuf {
+    let dir = get_config_dir();
     dir.join("config.json")
 }
 
