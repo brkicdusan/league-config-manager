@@ -32,10 +32,10 @@ impl Cfg {
 
     pub fn get_readonly(&self) -> bool {
         let f = File::open(&self.game).expect("File should always exist");
-        f.metadata().unwrap().permissions().readonly()
+        f.metadata().unwrap().permissions().readonly().clone()
     }
 
-    fn set_readonly_path(&self, p: &PathBuf, value: bool) {
+    fn set_readonly_path(p: &PathBuf, value: bool) {
         let f = File::open(p).expect("File should always exist");
         let mut perms = f.metadata().expect("Error reading meatadata").permissions();
         perms.set_readonly(value);
@@ -43,7 +43,7 @@ impl Cfg {
     }
 
     pub fn set_readonly(&self, value: bool) {
-        self.set_readonly_path(&self.game, value);
-        self.set_readonly_path(&self.settings, value);
+        Self::set_readonly_path(&self.game, value);
+        Self::set_readonly_path(&self.settings, value);
     }
 }

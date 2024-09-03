@@ -1,4 +1,4 @@
-use std::{fs, path::PathBuf};
+use std::{fs::{self, File}, path::PathBuf};
 
 use iced::widget::{button, horizontal_space, row, text};
 
@@ -66,9 +66,11 @@ impl Profile {
     }
 
     pub fn move_files(&self, cfg: &Cfg) {
+        cfg.set_readonly(false);
+
         fs::copy(
             self.path_to().join(cfg.game.file_name().unwrap()),
-            &cfg.game,
+            &cfg.game
         )
         .unwrap();
         fs::copy(
