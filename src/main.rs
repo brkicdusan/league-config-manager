@@ -31,6 +31,7 @@ struct Window {
     readonly: bool,
     error: Option<Error>,
     profiles: Vec<Profile>,
+    success: bool,
 }
 
 impl Window {
@@ -77,6 +78,7 @@ impl Application for Window {
                 readonly,
                 error: err,
                 profiles,
+                success: false,
             },
             Command::none(),
         )
@@ -86,6 +88,7 @@ impl Application for Window {
         String::from("League Config Manager")
     }
     fn update(&mut self, message: Self::Message) -> Command<Message> {
+        self.success = false;
         match message {
             Message::FindLocation => {
                 Command::perform(dialog::find_config_dialog(), Message::SetLocation)
@@ -123,6 +126,13 @@ impl Application for Window {
                 }
                 Command::none()
             }
+            Message::UseProfile(prof) => {
+                if let Some(cfg) = &self.cfg {
+                    prof.move_files(cfg);
+                    self.success = true;
+                }
+                Command::none()
+            }
         }
     }
 
@@ -143,7 +153,7 @@ impl Application for Window {
         let mut profiles = column![].align_items(iced::Alignment::Center).spacing(15);
 
         for p in &self.profiles {
-            profiles = profiles.push(p.get_item());
+            profiles = profiles.push(p.get_item(&self.cfg));
         }
 
         let mut add_profile = button(text("Add profile"));
@@ -165,6 +175,13 @@ impl Application for Window {
             let error_container = container(error_text).center_x().width(Length::Fill);
 
             content = content.push(error_container);
+        }
+
+        if self.success {
+            let success_text = text("Success!").style(theme::Text::Color(color!(0, 255, 0)));
+            let success_container = container(success_text).center_x().width(Length::Fill);
+
+            content = content.push(success_container);
         }
 
         container(content).padding(10).center_x().center_y().into()

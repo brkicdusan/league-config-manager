@@ -4,7 +4,7 @@ use iced::widget::{button, horizontal_space, row, text};
 
 use crate::{cfg::Cfg, config::get_config_dir, message::Message};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Profile {
     name: String,
 }
@@ -65,10 +65,27 @@ impl Profile {
         fs::remove_dir_all(dir).unwrap();
     }
 
-    pub fn get_item(&self) -> iced::widget::Row<'_, Message> {
+    pub fn move_files(&self, cfg: &Cfg) {
+        fs::copy(
+            self.path_to().join(cfg.game.file_name().unwrap()),
+            &cfg.game,
+        )
+        .unwrap();
+        fs::copy(
+            self.path_to().join(cfg.settings.file_name().unwrap()),
+            &cfg.settings,
+        )
+        .unwrap();
+    }
+
+    pub fn get_item(&self, cfg: &Option<Cfg>) -> iced::widget::Row<'_, Message> {
         let del_btn = button(text("Remove"))
             .style(iced::theme::Button::Destructive)
             .on_press(Message::RemoveProfile(self.name.clone()));
-        row![text(&self.name), horizontal_space(), del_btn]
+        let mut use_btn = button(text("Use this profile"));
+        if cfg.is_some() {
+            use_btn = use_btn.on_press(Message::UseProfile(self.clone()));
+        }
+        row![text(&self.name), horizontal_space(), del_btn, use_btn]
     }
 }

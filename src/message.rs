@@ -1,4 +1,4 @@
-use crate::error::Error;
+use crate::{error::Error, profile::Profile};
 
 use std::path::PathBuf;
 
@@ -9,4 +9,5 @@ pub(crate) enum Message {
     SetReadonly(bool),
     AddProfile,
     RemoveProfile(String),
+    UseProfile(Profile),
 }
