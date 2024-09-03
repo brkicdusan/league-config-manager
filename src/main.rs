@@ -6,13 +6,14 @@ mod error;
 
 use cfg::Cfg;
 use config::Config;
+use error::Error;
 
 use std::path::{Path, PathBuf};
 
 use iced::{
-    executor,
-    widget::{button, column, container, row, text, text_input, Checkbox},
-    Application, Command, Settings, Theme,
+    color, executor, theme,
+    widget::{button, column, container, row, text, text_input, Checkbox, Rule},
+    Application, Command, Length, Settings, Theme,
 };
 
 fn main() -> Result<(), iced::Error> {
@@ -30,18 +31,22 @@ struct Window {
     config: Config,
     cfg: Option<Cfg>,
     readonly: bool,
+    error: Option<Error>,
 }
 
 impl Window {
     fn set_cfg(&mut self, location: &Path) {
-        if let Ok(cfg) = Cfg::new(location) {
-            self.readonly = cfg.get_readonly();
-            self.cfg = Some(cfg);
-        } else {
-            self.cfg = None
+        match Cfg::new(location) {
+            Ok(cfg) => {
+                self.readonly = cfg.get_readonly();
+                self.cfg = Some(cfg);
+                self.error = None;
+            }
+            Err(e) => {
+                self.cfg = None;
+                self.error = Some(e);
+            }
         }
-
-        // TODO:error handling missing
     }
 }
 
@@ -57,15 +62,20 @@ impl Application for Window {
         let conf = Config::new();
         let mut cfg = None;
         let mut readonly = false;
-        if let Ok(c) = Cfg::from_config(&conf) {
-            readonly = c.get_readonly();
-            cfg = Some(c);
+        let mut err = None;
+        match Cfg::from_config(&conf) {
+            Ok(c) => {
+                readonly = c.get_readonly();
+                cfg = Some(c);
+            }
+            Err(e) => err = Some(e),
         }
         (
             Window {
                 config: conf,
                 cfg,
                 readonly,
+                error: err,
             },
             Command::none(),
         )
@@ -83,8 +93,7 @@ impl Application for Window {
                 Command::none()
             }
             Message::SetLocation(Err(error)) => {
-                println!("{:?}", error);
-                // TODO: error handling
+                self.error = Some(error);
                 Command::none()
             }
             Message::SetReadonly(readonly) => {
@@ -111,17 +120,22 @@ impl Application for Window {
             cb = cb.on_toggle(Message::SetReadonly)
         }
 
-        let tmp_text = if let Some(c) = &self.cfg {
-            text(c.game.to_str().expect("Should always convert"))
-        } else {
-            text("Config has not been located")
-        };
+        let mut content = column![location, cb, Rule::horizontal(0)].spacing(10);
 
-        container(column![location, cb, tmp_text])
-            .padding(10)
-            .center_x()
-            .center_y()
-            .into()
+        if let Some(e) = &self.error {
+            let error_str = match e {
+                Error::DialogClosed => "Dialog closed without choosing the folder",
+                Error::WrongPath => "Wrong path",
+                Error::MissingPath => "Missing path",
+            };
+
+            let error_text = text(error_str).style(theme::Text::Color(color!(200, 0, 0)));
+            let error_container = container(error_text).center_x().width(Length::Fill);
+
+            content = content.push(error_container);
+        }
+
+        container(content).padding(10).center_x().center_y().into()
     }
 }
 

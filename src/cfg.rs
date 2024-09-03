@@ -26,7 +26,7 @@ impl Cfg {
         if let Some(c) = &config.get_cfg_path() {
             return Self::new(c);
         }
-        Err(Error::WrongPath)
+        Err(Error::MissingPath)
         // TODO: error handling
     }
 

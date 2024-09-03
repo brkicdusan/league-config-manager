@@ -23,7 +23,6 @@ pub struct Config {
 impl Config {
     pub fn new() -> Self {
         let config_path = get_config_path();
-        // TODO:config gct ccommentar
         let config_file = OpenOptions::new()
             .read(true)
             .write(true)

@@ -2,4 +2,5 @@
 pub enum Error {
     DialogClosed,
     WrongPath,
+    MissingPath,
 }
