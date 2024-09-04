@@ -134,6 +134,10 @@ impl Application for Window {
                 }
                 Command::none()
             }
+            Message::Edit(_) => Command::none(),
+            Message::Confirm(_) => Command::none(),
+            Message::Reset(_) => Command::none(),
+            Message::OnChange(_, _) => Command::none(),
         }
     }
 

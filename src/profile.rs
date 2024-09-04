@@ -3,9 +3,7 @@ use std::{
     path::PathBuf,
 };
 
-use iced::{
-    theme::Container, widget::{button, container, horizontal_space, row, text, text_input, Row}, Element, Renderer, Theme
-};
+use iced::widget::{button, container, horizontal_space, row, text, text_input, Row};
 
 use crate::{cfg::Cfg, config::get_config_dir, message::Message};
 
@@ -111,27 +109,30 @@ impl Profile {
         }
 
         let edit_btn = if !self.editing {
-            container(button("Edit"))
+            container(button("Edit").on_press(Message::Edit(self.name.clone())))
         } else {
             container(
                 row![
-                    button("Confirm").style(iced::theme::Button::Positive),
-                    button("Reset").style(iced::theme::Button::Destructive)
+                    button("Confirm")
+                        .style(iced::theme::Button::Positive)
+                        .on_press(Message::Confirm(self.name.clone())),
+                    button("Reset")
+                        .style(iced::theme::Button::Destructive)
+                        .on_press(Message::Reset(self.name.clone())),
                 ]
                 .spacing(10),
             )
         };
 
-        let mut  profile_row = row![
-        ]
-        .spacing(10);
+        let mut profile_row = row![].spacing(10);
         if !self.editing {
             profile_row = profile_row.push(text(&self.name));
         }
 
         if self.editing {
             profile_row = profile_row.push(
-            text_input("", &self.edit_name)
+                text_input("", &self.edit_name)
+                    .on_input(|s| Message::OnChange(s, self.name.clone())),
             );
         }
 
