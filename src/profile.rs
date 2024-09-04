@@ -5,7 +5,7 @@ use std::{
 
 use iced::widget::{button, container, horizontal_space, row, text, text_input, Row};
 
-use crate::{cfg::Cfg, config::get_config_dir, message::Message};
+use crate::{cfg::Cfg, config::get_config_dir, error, message::Message};
 
 #[derive(Debug, Clone)]
 pub struct Profile {
@@ -93,9 +93,31 @@ impl Profile {
         .unwrap();
     }
 
-    pub fn start_edit(&mut self) {
+    pub fn edit_start(&mut self) {
         self.edit_name.clone_from(&self.name);
         self.editing = true;
+    }
+
+    pub fn edit_confirm(&mut self) -> Result<(), error::Error> {
+        for p in Profile::get_profiles() {
+            if p.get_name().eq(&self.edit_name) {
+                return Err(error::Error::NameTaken);
+            }
+        }
+        self.editing = false;
+        // TODO:check if new name is valid name for dir
+        let dir = get_config_dir();
+        fs::rename(dir.join(&self.name), dir.join(&self.edit_name)).unwrap();
+        self.name.clone_from(&self.edit_name);
+        Ok(())
+    }
+
+    pub fn edit_reset(&mut self) {
+        self.editing = false;
+    }
+
+    pub fn edit_change(&mut self, new_name: String) {
+        self.edit_name = new_name;
     }
 
     pub fn get_item(&self, cfg: &Option<Cfg>) -> Row<Message> {
@@ -124,7 +146,7 @@ impl Profile {
             )
         };
 
-        let mut profile_row = row![].spacing(10);
+        let mut profile_row = row![].spacing(10).align_items(iced::Alignment::Center);
         if !self.editing {
             profile_row = profile_row.push(text(&self.name));
         }
@@ -132,7 +154,7 @@ impl Profile {
         if self.editing {
             profile_row = profile_row.push(
                 text_input("", &self.edit_name)
-                    .on_input(|s| Message::OnChange(s, self.name.clone())),
+                    .on_input(|s| Message::OnChange(self.name.clone(), s)),
             );
         }
 

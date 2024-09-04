@@ -48,6 +48,10 @@ impl Window {
             }
         }
     }
+
+    fn get_profile_from_name(&mut self, name: &String) -> Option<&mut Profile> {
+        self.profiles.iter_mut().find(|p| p.get_name().eq(name))
+    }
 }
 
 impl Application for Window {
@@ -134,10 +138,31 @@ impl Application for Window {
                 }
                 Command::none()
             }
-            Message::Edit(_) => Command::none(),
-            Message::Confirm(_) => Command::none(),
-            Message::Reset(_) => Command::none(),
-            Message::OnChange(_, _) => Command::none(),
+            Message::Edit(name) => {
+                let prof = self.get_profile_from_name(&name).unwrap();
+                prof.edit_start();
+                Command::none()
+            }
+            Message::Confirm(name) => {
+                let prof = self.get_profile_from_name(&name).unwrap();
+                if let Err(e) = prof.edit_confirm() {
+                    self.error = Some(e);
+                } else {
+                    self.error = None;
+                    self.success = true;
+                }
+                Command::none()
+            }
+            Message::Reset(name) => {
+                let prof = self.get_profile_from_name(&name).unwrap();
+                prof.edit_reset();
+                Command::none()
+            }
+            Message::OnChange(name, new_name) => {
+                let prof = self.get_profile_from_name(&name).unwrap();
+                prof.edit_change(new_name);
+                Command::none()
+            }
         }
     }
 
@@ -174,6 +199,7 @@ impl Application for Window {
                 Error::DialogClosed => "Dialog closed without choosing the folder",
                 Error::WrongPath => "Wrong path",
                 Error::MissingPath => "Missing path",
+                Error::NameTaken => "Name is taken",
             };
 
             let error_text = text(error_str).style(theme::Text::Color(color!(200, 0, 0)));

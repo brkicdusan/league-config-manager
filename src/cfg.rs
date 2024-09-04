@@ -27,7 +27,6 @@ impl Cfg {
             return Self::new(c);
         }
         Err(Error::MissingPath)
-        // TODO: error handling
     }
 
     pub fn get_readonly(&self) -> bool {
