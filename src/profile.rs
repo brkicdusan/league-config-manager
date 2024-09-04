@@ -1,12 +1,21 @@
-use std::{fs::{self, File}, path::PathBuf};
+use std::{
+    fs::{self},
+    path::PathBuf,
+};
 
-use iced::widget::{button, horizontal_space, row, text};
+use iced::{
+    theme::Container,
+    widget::{button, container, horizontal_space, row, text, text_input},
+    Renderer, Theme,
+};
 
 use crate::{cfg::Cfg, config::get_config_dir, message::Message};
 
 #[derive(Debug, Clone)]
 pub struct Profile {
     name: String,
+    editing: bool,
+    edit_name: String,
 }
 
 impl Profile {
@@ -35,7 +44,11 @@ impl Profile {
         fs::create_dir_all(&dir).unwrap();
         fs::copy(&cfg.game, dir.join(cfg.game.file_name().unwrap())).unwrap();
         fs::copy(&cfg.settings, dir.join(cfg.settings.file_name().unwrap())).unwrap();
-        Self { name }
+        Self {
+            name,
+            editing: false,
+            edit_name: String::from(""),
+        }
     }
 
     pub fn get_name(&self) -> &String {
@@ -49,7 +62,11 @@ impl Profile {
             let entry = entry.unwrap().path();
             if entry.is_dir() {
                 let name = entry.file_name().unwrap().to_str().unwrap().to_string();
-                profiles.push(Self { name })
+                profiles.push(Self {
+                    name,
+                    editing: false,
+                    edit_name: String::from(""),
+                })
             }
         }
         profiles
@@ -65,12 +82,12 @@ impl Profile {
         fs::remove_dir_all(dir).unwrap();
     }
 
-    pub fn move_files(&self, cfg: &Cfg) {
+    pub fn copy_files(&self, cfg: &Cfg) {
         cfg.set_readonly(false);
 
         fs::copy(
             self.path_to().join(cfg.game.file_name().unwrap()),
-            &cfg.game
+            &cfg.game,
         )
         .unwrap();
         fs::copy(
@@ -80,14 +97,52 @@ impl Profile {
         .unwrap();
     }
 
-    pub fn get_item(&self, cfg: &Option<Cfg>) -> iced::widget::Row<'_, Message> {
+    pub fn start_edit(&mut self) {
+        self.edit_name.clone_from(&self.name);
+        self.editing = true;
+    }
+
+    pub fn get_item(&self, cfg: &Option<Cfg>) -> iced::widget::Row<'_, Message, Theme, Renderer> {
         let del_btn = button(text("Remove"))
             .style(iced::theme::Button::Destructive)
             .on_press(Message::RemoveProfile(self.name.clone()));
-        let mut use_btn = button(text("Use this profile"));
+
+        let mut use_btn = button(text("Use"));
         if cfg.is_some() {
             use_btn = use_btn.on_press(Message::UseProfile(self.clone()));
         }
-        row![text(&self.name), horizontal_space(), del_btn, use_btn]
+
+        let edit_btn = if !self.editing {
+            container(button("Edit"))
+        } else {
+            container(
+                row![
+                    button("Confirm").style(iced::theme::Button::Positive),
+                    button("Reset").style(iced::theme::Button::Destructive)
+                ]
+                .spacing(10),
+            )
+        };
+
+        row![
+            self.get_name_txt(),
+            horizontal_space(),
+            edit_btn,
+            del_btn,
+            use_btn
+        ]
+        .spacing(10)
+    }
+
+    fn get_name_txt(&self) -> iced::Element<'_, Message> {
+        if !self.editing {
+            text(&self.name).into()
+        } else {
+            text_input("", &self.edit_name)
+                .on_input(|s| {
+                    Message::OnChange(s, self.name.clone());
+                })
+                .into()
+        }
     }
 }

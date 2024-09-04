@@ -10,4 +10,8 @@ pub(crate) enum Message {
     AddProfile,
     RemoveProfile(String),
     UseProfile(Profile),
+    Edit(String),
+    Confirm(String),
+    Reset(String),
+    OnChange(String, String),
 }

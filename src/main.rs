@@ -128,7 +128,7 @@ impl Application for Window {
             }
             Message::UseProfile(prof) => {
                 if let Some(cfg) = &self.cfg {
-                    prof.move_files(cfg);
+                    prof.copy_files(cfg);
                     cfg.set_readonly(self.readonly);
                     self.success = true;
                 }

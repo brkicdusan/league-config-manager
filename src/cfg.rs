@@ -32,7 +32,7 @@ impl Cfg {
 
     pub fn get_readonly(&self) -> bool {
         let f = File::open(&self.game).expect("File should always exist");
-        f.metadata().unwrap().permissions().readonly().clone()
+        f.metadata().unwrap().permissions().readonly()
     }
 
     fn set_readonly_path(p: &PathBuf, value: bool) {
