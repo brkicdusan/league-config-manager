@@ -4,9 +4,7 @@ use std::{
 };
 
 use iced::{
-    theme::Container,
-    widget::{button, container, horizontal_space, row, text, text_input},
-    Renderer, Theme,
+    theme::Container, widget::{button, container, horizontal_space, row, text, text_input, Row}, Element, Renderer, Theme
 };
 
 use crate::{cfg::Cfg, config::get_config_dir, message::Message};
@@ -102,7 +100,7 @@ impl Profile {
         self.editing = true;
     }
 
-    pub fn get_item(&self, cfg: &Option<Cfg>) -> iced::widget::Row<'_, Message, Theme, Renderer> {
+    pub fn get_item(&self, cfg: &Option<Cfg>) -> Row<Message> {
         let del_btn = button(text("Remove"))
             .style(iced::theme::Button::Destructive)
             .on_press(Message::RemoveProfile(self.name.clone()));
@@ -124,25 +122,24 @@ impl Profile {
             )
         };
 
-        row![
-            self.get_name_txt(),
-            horizontal_space(),
-            edit_btn,
-            del_btn,
-            use_btn
+        let mut  profile_row = row![
         ]
-        .spacing(10)
-    }
-
-    fn get_name_txt(&self) -> iced::Element<'_, Message> {
+        .spacing(10);
         if !self.editing {
-            text(&self.name).into()
-        } else {
-            text_input("", &self.edit_name)
-                .on_input(|s| {
-                    Message::OnChange(s, self.name.clone());
-                })
-                .into()
+            profile_row = profile_row.push(text(&self.name));
         }
+
+        if self.editing {
+            profile_row = profile_row.push(
+            text_input("", &self.edit_name)
+            );
+        }
+
+        profile_row = profile_row.push(horizontal_space());
+        profile_row = profile_row.push(edit_btn);
+        profile_row = profile_row.push(del_btn);
+        profile_row = profile_row.push(use_btn);
+
+        profile_row
     }
 }
