@@ -4,4 +4,6 @@ pub enum Error {
     WrongPath,
     MissingPath,
     NameTaken,
+    ZipExport,
+    ZipImport,
 }

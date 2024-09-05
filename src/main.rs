@@ -13,7 +13,7 @@ use error::Error;
 use message::Message;
 use profile::Profile;
 
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use iced::{
     color, executor, theme,
@@ -163,6 +163,20 @@ impl Application for Window {
                 prof.edit_change(new_name);
                 Command::none()
             }
+            Message::Export(profile) => {
+                match profile.zip(PathBuf::from("/home/dusan/Downloads/")) {
+                    Ok(_) => self.success = true,
+                    Err(_) => self.error = Some(Error::ZipExport),
+                };
+                Command::none()
+            }
+            Message::Import(import_path) => {
+                match Profile::from_zip(&import_path) {
+                    Ok(profile) => self.profiles.push(profile),
+                    Err(_) => self.error = Some(Error::ZipImport),
+                }
+                Command::none()
+            }
         }
     }
 
@@ -190,9 +204,19 @@ impl Application for Window {
         if self.cfg.is_some() {
             add_profile = add_profile.on_press(Message::AddProfile);
         }
+        let import_profile = button(text("Import profile")).on_press(Message::Import(
+            PathBuf::from("/home/dusan/Downloads/blabla.zip"),
+        ));
 
-        let mut content =
-            column![location, cb, Rule::horizontal(0), profiles, add_profile].spacing(10);
+        let mut content = column![
+            location,
+            cb,
+            Rule::horizontal(0),
+            profiles,
+            add_profile,
+            import_profile
+        ]
+        .spacing(10);
 
         if let Some(e) = &self.error {
             let error_str = match e {
@@ -200,6 +224,8 @@ impl Application for Window {
                 Error::WrongPath => "Wrong path",
                 Error::MissingPath => "Missing path",
                 Error::NameTaken => "Name is taken",
+                Error::ZipExport => "Error exporting profile",
+                Error::ZipImport => "Error importing profile",
             };
 
             let error_text = text(error_str).style(theme::Text::Color(color!(200, 0, 0)));

@@ -1,9 +1,12 @@
 use std::{
-    fs::{self},
+    error::Error,
+    fs::{self, File},
+    io::{Read, Write},
     path::PathBuf,
 };
 
 use iced::widget::{button, container, horizontal_space, row, text, text_input, Row};
+use zip::{write::SimpleFileOptions, CompressionMethod, ZipArchive, ZipWriter};
 
 use crate::{cfg::Cfg, config::get_config_dir, error, message::Message};
 
@@ -19,18 +22,20 @@ impl Profile {
         let profiles = Self::get_profiles();
         for i in 0..15 {
             let name: String = format!("profile_{i}");
-            let mut flag = true;
-            for p in &profiles {
-                if p.get_name().eq(&name) {
-                    flag = false;
-                    break;
-                }
-            }
-            if flag {
+            if Self::check_name(&name, &profiles) {
                 return Some(name);
             }
         }
         None
+    }
+
+    fn check_name(name: &String, profiles: &Vec<Profile>) -> bool {
+        for p in profiles {
+            if p.get_name().eq(name) {
+                return false;
+            }
+        }
+        true
     }
 
     pub fn new(cfg: &Cfg) -> Self {
@@ -45,6 +50,47 @@ impl Profile {
             editing: false,
             edit_name: String::from(""),
         }
+    }
+
+    pub fn from_zip(zip_file_path: &PathBuf) -> Result<Self, Box<dyn Error>> {
+        let zip_file = File::open(zip_file_path)?;
+        let mut name = zip_file_path
+            .file_stem()
+            .unwrap()
+            .to_str()
+            .unwrap()
+            .to_string();
+        if !Self::check_name(&name, &Self::get_profiles()) {
+            name = Self::gen_name().unwrap();
+        }
+
+        let mut archive = ZipArchive::new(zip_file)?;
+        let extraction_dir = get_config_dir().join(&name);
+        std::fs::create_dir(&extraction_dir)?;
+
+        for i in 0..archive.len() {
+            let mut file = archive.by_index(i)?;
+            let file_name = file.name().to_owned();
+
+            // Create the path to the extracted file in the destination directory.
+            let target_path = extraction_dir.join(file_name);
+
+            // Create the destination directory if it does not exist.
+            if let Some(parent_dir) = target_path.parent() {
+                std::fs::create_dir_all(parent_dir)?;
+            }
+
+            let mut output_file = File::create(&target_path)?;
+
+            // Read the contents of the file from the ZIP archive and write them to the destination file.
+            std::io::copy(&mut file, &mut output_file)?;
+        }
+
+        Ok(Self {
+            name,
+            editing: false,
+            edit_name: String::from(""),
+        })
     }
 
     pub fn get_name(&self) -> &String {
@@ -120,6 +166,35 @@ impl Profile {
         self.edit_name = new_name;
     }
 
+    pub fn zip(&self, export_dir: PathBuf) -> Result<PathBuf, Box<dyn Error>> {
+        let zip_file_path = export_dir.join(format!("{}.zip", &self.name));
+        let zip_file = File::create(&zip_file_path)?;
+
+        let mut zip_writer = ZipWriter::new(zip_file);
+
+        let dir = get_config_dir().join(&self.name);
+
+        let files_to_compress: Vec<PathBuf> =
+            vec![dir.join("game.cfg"), dir.join("PersistedSettings.json")];
+
+        let options = SimpleFileOptions::default().compression_method(CompressionMethod::DEFLATE);
+
+        for file_path in &files_to_compress {
+            let mut file = File::open(file_path)?;
+            let file_name = file_path.file_name().unwrap().to_str().unwrap();
+
+            // Adding the file to the ZIP archive.
+            zip_writer.start_file(file_name, options)?;
+
+            let mut buffer = Vec::new();
+            file.read_to_end(&mut buffer)?;
+
+            zip_writer.write_all(&buffer)?;
+        }
+
+        Ok(zip_file_path)
+    }
+
     pub fn get_item(&self, cfg: &Option<Cfg>) -> Row<Message> {
         let del_btn = button(text("Remove"))
             .style(iced::theme::Button::Destructive)
@@ -130,8 +205,10 @@ impl Profile {
             use_btn = use_btn.on_press(Message::UseProfile(self.clone()));
         }
 
+        let export_btn = button(text("Export")).on_press(Message::Export(self.clone()));
+
         let edit_btn = if !self.editing {
-            container(button("Edit").on_press(Message::Edit(self.name.clone())))
+            container(button("Edit name").on_press(Message::Edit(self.name.clone())))
         } else {
             container(
                 row![
@@ -162,6 +239,7 @@ impl Profile {
         profile_row = profile_row.push(edit_btn);
         profile_row = profile_row.push(del_btn);
         profile_row = profile_row.push(use_btn);
+        profile_row = profile_row.push(export_btn);
 
         profile_row
     }

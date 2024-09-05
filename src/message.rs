@@ -14,4 +14,6 @@ pub(crate) enum Message {
     Confirm(String),
     Reset(String),
     OnChange(String, String),
+    Export(Profile),
+    Import(PathBuf),
 }
