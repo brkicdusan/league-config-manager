@@ -15,5 +15,7 @@ pub(crate) enum Message {
     Reset(String),
     OnChange(String, String),
     Export(Profile),
-    Import(PathBuf),
+    SetExport(Result<(PathBuf, Profile), Error>),
+    Import,
+    SetImport(Result<PathBuf, Error>),
 }

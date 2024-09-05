@@ -9,11 +9,12 @@ mod profile;
 
 use cfg::Cfg;
 use config::Config;
+use dialog::export_zip_path;
 use error::Error;
 use message::Message;
 use profile::Profile;
 
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 use iced::{
     color, executor, theme,
@@ -164,19 +165,31 @@ impl Application for Window {
                 Command::none()
             }
             Message::Export(profile) => {
-                match profile.zip(PathBuf::from("/home/dusan/Downloads/")) {
+                Command::perform(export_zip_path(profile), Message::SetExport)
+            }
+            Message::SetExport(Ok((export_path, profile))) => {
+                match profile.zip(export_path) {
                     Ok(_) => self.success = true,
                     Err(_) => self.error = Some(Error::ZipExport),
                 };
                 Command::none()
             }
-            Message::Import(import_path) => {
+            Message::SetExport(Err(e)) => {
+                self.error = Some(e);
+                Command::none()
+            }
+            Message::SetImport(Ok(import_path)) => {
                 match Profile::from_zip(&import_path) {
                     Ok(profile) => self.profiles.push(profile),
                     Err(_) => self.error = Some(Error::ZipImport),
                 }
                 Command::none()
             }
+            Message::SetImport(Err(e)) => {
+                self.error = Some(e);
+                Command::none()
+            }
+            Message::Import => Command::perform(dialog::import_zip_path(), Message::SetImport),
         }
     }
 
@@ -204,9 +217,7 @@ impl Application for Window {
         if self.cfg.is_some() {
             add_profile = add_profile.on_press(Message::AddProfile);
         }
-        let import_profile = button(text("Import profile")).on_press(Message::Import(
-            PathBuf::from("/home/dusan/Downloads/blabla.zip"),
-        ));
+        let import_profile = button(text("Import profile")).on_press(Message::Import);
 
         let mut content = column![
             location,
