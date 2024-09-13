@@ -1,11 +1,14 @@
 //![windows_subsystem = "windows"]
 
 mod cfg;
+mod colors;
 mod config;
 mod dialog;
 mod error;
 mod message;
 mod profile;
+mod theme;
+mod widget;
 
 use cfg::Cfg;
 use config::Config;
@@ -13,17 +16,24 @@ use dialog::export_zip_path;
 use error::Error;
 use message::Message;
 use profile::Profile;
+use widget::{add_icon, icon_btn, import_icon, open_icon, SIZE_LEN};
 
 use std::path::Path;
 
+use crate::theme::Theme;
+
 use iced::{
-    color, executor, theme,
+    executor,
     widget::{button, column, container, row, text, text_input, Checkbox, Rule},
-    Application, Command, Length, Settings, Theme,
+    Application, Command, Font, Length, Settings,
 };
 
 fn main() -> Result<(), iced::Error> {
-    Window::run(Settings::default())
+    Window::run(Settings {
+        fonts: vec![include_bytes!("../fonts/icons.ttf").as_slice().into()],
+        // default_font: Font::MONOSPACE,
+        ..Settings::default()
+    })
 }
 
 struct Window {
@@ -193,14 +203,9 @@ impl Application for Window {
         }
     }
 
-    fn view(&self) -> iced::Element<'_, Self::Message> {
+    fn view(&self) -> iced::Element<'_, Self::Message, Theme> {
         let config_path = text_input("Config not found", self.config.path_to_str()).padding(10);
-        let location_btn = button(text("Find \"League of Legends\" folder"))
-            .padding(10)
-            .on_press(Message::FindLocation);
-        let location = row![config_path, location_btn]
-            .align_items(iced::Alignment::Center)
-            .spacing(10);
+        let location_btn = icon_btn(open_icon(), Message::FindLocation.into(), colors::GOLD);
 
         let mut cb = Checkbox::new("Lock settings", self.readonly);
         if self.cfg.is_some() {
@@ -210,24 +215,21 @@ impl Application for Window {
         let mut profiles = column![].align_items(iced::Alignment::Center).spacing(15);
 
         for p in &self.profiles {
-            profiles = profiles.push(p.get_item(&self.cfg));
+            // profiles = profiles.push(p.get_item(&self.cfg));
         }
 
-        let mut add_profile = button(text("Add profile"));
+        let mut add_profile = icon_btn(add_icon(), None, colors::GOLD);
         if self.cfg.is_some() {
             add_profile = add_profile.on_press(Message::AddProfile);
         }
-        let import_profile = button(text("Import profile")).on_press(Message::Import);
 
-        let mut content = column![
-            location,
-            cb,
-            Rule::horizontal(0),
-            profiles,
-            add_profile,
-            import_profile
-        ]
-        .spacing(10);
+        let import_profile = icon_btn(import_icon(), Message::Import.into(), colors::BLUE);
+
+        let location = row![config_path, location_btn, import_profile, add_profile]
+            .align_items(iced::Alignment::Center)
+            .spacing(10);
+
+        let mut content = column![location, cb, Rule::horizontal(0), profiles].spacing(10);
 
         if let Some(e) = &self.error {
             let error_str = match e {
@@ -239,19 +241,28 @@ impl Application for Window {
                 Error::ZipImport => "Error importing profile",
             };
 
-            let error_text = text(error_str).style(theme::Text::Color(color!(200, 0, 0)));
+            let error_text = text(error_str)
+                // .style(iced::theme::Text::Color(color!(200, 0, 0)))
+            ;
             let error_container = container(error_text).center_x().width(Length::Fill);
 
             content = content.push(error_container);
         }
 
         if self.success {
-            let success_text = text("Success!").style(theme::Text::Color(color!(0, 255, 0)));
+            let success_text = text("Success!")
+                // .style(iced::theme::Text::Color(color!(0, 255, 0)))
+            ;
             let success_container = container(success_text).center_x().width(Length::Fill);
 
             content = content.push(success_container);
         }
 
         container(content).padding(10).center_x().center_y().into()
+        // container(location).padding(10).into()
+    }
+
+    fn theme(&self) -> Self::Theme {
+        Theme::default()
     }
 }
