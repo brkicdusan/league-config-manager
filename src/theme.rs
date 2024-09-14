@@ -1,5 +1,5 @@
 use crate::colors;
-use iced::widget::{button, checkbox, container, rule, text, text_input, tooltip};
+use iced::widget::{button, checkbox, container, rule, text, text_input};
 use iced::{application, Background, Border, Color};
 
 #[derive(Debug, Clone, Copy, Default)]

@@ -58,10 +58,6 @@ impl Config {
         }
     }
 
-    fn default() -> Config {
-        Config { cfg_path: None }
-    }
-
     pub fn set_path(&mut self, cfg_path: Option<PathBuf>) {
         self.cfg_path = cfg_path;
         self.update();
