@@ -5,10 +5,21 @@ use std::{
     path::PathBuf,
 };
 
-use iced::widget::{button, container, horizontal_space, row, text, text_input, Row};
+use iced::{
+    widget::{button, container, horizontal_space, row, text, text_input, Row},
+    Length,
+};
 use zip::{write::SimpleFileOptions, CompressionMethod, ZipArchive, ZipWriter};
 
-use crate::{cfg::Cfg, config::get_config_dir, error, message::Message};
+use crate::{
+    cfg::Cfg,
+    colors,
+    config::get_config_dir,
+    error,
+    message::Message,
+    theme::Theme,
+    widget::{cancel_icon, confirm_icon, edit_icon, icon_btn, share_icon, trash_icon, use_icon},
+};
 
 #[derive(Debug, Clone)]
 pub struct Profile {
@@ -195,29 +206,44 @@ impl Profile {
         Ok(zip_file_path)
     }
 
-    pub fn get_item(&self, cfg: &Option<Cfg>) -> Row<Message> {
-        let del_btn = button(text("Remove"))
-            .style(iced::theme::Button::Destructive)
-            .on_press(Message::RemoveProfile(self.name.clone()));
+    pub fn get_item(&self, cfg: &Option<Cfg>) -> Row<Message, Theme> {
+        let del_btn = icon_btn(
+            trash_icon(),
+            Message::RemoveProfile(self.name.clone()).into(),
+            colors::RED,
+        );
 
-        let mut use_btn = button(text("Use"));
+        let mut use_msg = None;
         if cfg.is_some() {
-            use_btn = use_btn.on_press(Message::UseProfile(self.clone()));
+            use_msg = Some(Message::UseProfile(self.clone()));
         }
+        let use_btn = icon_btn(use_icon(), use_msg, colors::BLUE);
 
-        let export_btn = button(text("Export")).on_press(Message::Export(self.clone()));
+        let export_btn = icon_btn(
+            share_icon(),
+            Message::Export(self.clone()).into(),
+            colors::BLUE,
+        );
 
         let edit_btn = if !self.editing {
-            container(button("Edit name").on_press(Message::Edit(self.name.clone())))
+            container(icon_btn(
+                edit_icon(),
+                Message::Edit(self.name.clone()).into(),
+                colors::BLUE,
+            ))
         } else {
             container(
                 row![
-                    button("Confirm")
-                        .style(iced::theme::Button::Positive)
-                        .on_press(Message::Confirm(self.name.clone())),
-                    button("Reset")
-                        .style(iced::theme::Button::Destructive)
-                        .on_press(Message::Reset(self.name.clone())),
+                    icon_btn(
+                        confirm_icon(),
+                        Message::Confirm(self.name.clone()).into(),
+                        colors::GREEN
+                    ),
+                    icon_btn(
+                        cancel_icon(),
+                        Message::Reset(self.name.clone()).into(),
+                        colors::RED
+                    )
                 ]
                 .spacing(10),
             )
@@ -231,15 +257,16 @@ impl Profile {
         if self.editing {
             profile_row = profile_row.push(
                 text_input("", &self.edit_name)
+                    .padding(10)
                     .on_input(|s| Message::OnChange(self.name.clone(), s)),
             );
         }
 
         profile_row = profile_row.push(horizontal_space());
         profile_row = profile_row.push(edit_btn);
-        profile_row = profile_row.push(del_btn);
         profile_row = profile_row.push(use_btn);
         profile_row = profile_row.push(export_btn);
+        profile_row = profile_row.push(del_btn);
 
         profile_row
     }

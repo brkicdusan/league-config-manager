@@ -16,13 +16,25 @@ impl application::StyleSheet for Theme {
     }
 }
 
-impl text::StyleSheet for Theme {
-    type Style = ();
+#[derive(Debug, Clone, Copy, Default)]
+pub enum Text {
+    #[default]
+    Default,
+    Error,
+    Success,
+}
 
-    fn appearance(&self, _style: Self::Style) -> text::Appearance {
-        text::Appearance {
-            color: colors::TEXT.into(),
+impl text::StyleSheet for Theme {
+    type Style = Text;
+
+    fn appearance(&self, style: Self::Style) -> text::Appearance {
+        let color = match style {
+            Text::Error => colors::RED,
+            Text::Success => colors::GREEN,
+            _ => colors::TEXT,
         }
+        .into();
+        text::Appearance { color }
     }
 }
 
@@ -30,6 +42,8 @@ impl text::StyleSheet for Theme {
 pub enum Container {
     #[default]
     Default,
+    Error,
+    Success,
 }
 
 impl container::StyleSheet for Theme {
@@ -37,6 +51,27 @@ impl container::StyleSheet for Theme {
 
     fn appearance(&self, style: &Self::Style) -> container::Appearance {
         match style {
+            Container::Error => container::Appearance {
+                background: Background::Color(colors::RED_BG).into(),
+                border: Border {
+                    color: colors::RED,
+                    width: 2.0,
+                    radius: 5.into(),
+                },
+                text_color: colors::RED.into(),
+                ..container::Appearance::default()
+            },
+            Container::Success => container::Appearance {
+                background: Background::Color(colors::GREEN_BG).into(),
+                border: Border {
+                    color: colors::GREEN,
+                    width: 2.0,
+                    radius: 5.into(),
+                },
+                text_color: colors::GREEN.into(),
+                ..container::Appearance::default()
+            },
+
             Container::Default => container::Appearance::default(),
         }
     }
@@ -73,6 +108,58 @@ impl button::StyleSheet for Theme {
             },
         }
     }
+
+    fn hovered(&self, style: &Self::Style) -> button::Appearance {
+        let active = self.active(style);
+
+        button::Appearance {
+            shadow_offset: active.shadow_offset + iced::Vector::new(0.0, 1.0),
+            background: Background::Color(match style {
+                Button::Fill(colors::GOLD) => colors::GOLD_LIGHT,
+                Button::Fill(colors::GREEN) => colors::GREEN_BG,
+                Button::Fill(colors::RED) => colors::RED_BG,
+                _ => colors::BLUE_DARK,
+            })
+            .into(),
+            ..active
+        }
+    }
+
+    fn pressed(&self, style: &Self::Style) -> button::Appearance {
+        let active = self.active(style);
+
+        button::Appearance {
+            shadow_offset: iced::Vector::default(),
+            ..active
+        }
+    }
+
+    fn disabled(&self, style: &Self::Style) -> button::Appearance {
+        let active = self.active(style);
+
+        button::Appearance {
+            shadow_offset: iced::Vector::default(),
+            background: active.background.map(|background| match background {
+                Background::Color(color) => Background::Color(Color {
+                    a: color.a * 0.5,
+                    ..color
+                }),
+                Background::Gradient(gradient) => Background::Gradient(gradient.mul_alpha(0.5)),
+            }),
+            text_color: Color {
+                a: active.text_color.a * 0.5,
+                ..active.text_color
+            },
+            border: Border {
+                color: Color {
+                    a: active.border.color.a * 0.5,
+                    ..active.border.color
+                },
+                ..active.border
+            },
+            ..active
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy, Default)]
@@ -82,7 +169,6 @@ pub enum TextInput {
 }
 
 impl text_input::StyleSheet for Theme {
-    // TODO: style this
     type Style = TextInput;
 
     fn active(&self, style: &Self::Style) -> text_input::Appearance {
@@ -90,8 +176,8 @@ impl text_input::StyleSheet for Theme {
             TextInput::Default => text_input::Appearance {
                 background: colors::BG.into(),
                 border: Border {
-                    color: colors::BLUE,
-                    width: 5.0,
+                    color: colors::TEXT,
+                    width: 1.0,
                     radius: 5.into(),
                 },
                 icon_color: colors::TEXT,
@@ -114,32 +200,22 @@ impl text_input::StyleSheet for Theme {
     }
 
     fn focused(&self, style: &Self::Style) -> text_input::Appearance {
-        match style {
-            TextInput::Default => text_input::Appearance {
-                background: colors::BG.into(),
-                border: Border {
-                    color: colors::BLUE,
-                    width: 5.0,
-                    radius: 5.into(),
-                },
-                icon_color: colors::TEXT.into(),
-            },
-        }
+        self.active(style)
     }
 
-    fn placeholder_color(&self, style: &Self::Style) -> iced::Color {
+    fn placeholder_color(&self, _style: &Self::Style) -> iced::Color {
         colors::GOLD_LIGHT
     }
 
-    fn value_color(&self, style: &Self::Style) -> iced::Color {
+    fn value_color(&self, _style: &Self::Style) -> iced::Color {
         colors::TEXT
     }
 
-    fn disabled_color(&self, style: &Self::Style) -> iced::Color {
+    fn disabled_color(&self, _style: &Self::Style) -> iced::Color {
         colors::GOLD_LIGHT
     }
 
-    fn selection_color(&self, style: &Self::Style) -> iced::Color {
+    fn selection_color(&self, _style: &Self::Style) -> iced::Color {
         colors::TEXT
     }
 }
@@ -151,25 +227,31 @@ impl checkbox::StyleSheet for Theme {
         checkbox::Appearance {
             background: colors::BG.into(),
             border: Border {
-                color: colors::BLUE,
+                color: colors::GOLD,
                 width: 1.0,
                 radius: 5.0.into(),
             },
-            icon_color: colors::BLUE,
-            text_color: colors::BLUE.into(),
+            icon_color: colors::GOLD,
+            text_color: colors::GOLD.into(),
         }
     }
 
-    fn disabled(&self, _style: &Self::Style, _is_checked: bool) -> checkbox::Appearance {
+    fn disabled(&self, style: &Self::Style, is_checked: bool) -> checkbox::Appearance {
+        let active = self.active(style, is_checked);
+
+        let color = Color {
+            a: active.icon_color.a * 0.5,
+            ..active.icon_color
+        };
+
         checkbox::Appearance {
-            background: colors::BG.into(),
+            icon_color: color,
+            text_color: color.into(),
             border: Border {
-                color: colors::BLUE,
-                width: 1.0,
-                radius: 5.0.into(),
+                color,
+                ..active.border
             },
-            icon_color: colors::BLUE,
-            text_color: colors::BLUE.into(),
+            ..active
         }
     }
 
@@ -177,12 +259,12 @@ impl checkbox::StyleSheet for Theme {
         checkbox::Appearance {
             background: colors::BG.into(),
             border: Border {
-                color: colors::BLUE,
+                color: colors::GOLD_LIGHT,
                 width: 1.0,
                 radius: 5.0.into(),
             },
-            icon_color: colors::BLUE,
-            text_color: colors::BLUE.into(),
+            icon_color: colors::GOLD_LIGHT,
+            text_color: colors::GOLD_LIGHT.into(),
         }
     }
 }
@@ -192,7 +274,7 @@ impl rule::StyleSheet for Theme {
 
     fn appearance(&self, _style: &Self::Style) -> rule::Appearance {
         rule::Appearance {
-            color: colors::BLUE,
+            color: colors::GOLD,
             width: 1,
             radius: 1.into(),
             fill_mode: rule::FillMode::Full,

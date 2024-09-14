@@ -215,7 +215,7 @@ impl Application for Window {
         let mut profiles = column![].align_items(iced::Alignment::Center).spacing(15);
 
         for p in &self.profiles {
-            // profiles = profiles.push(p.get_item(&self.cfg));
+            profiles = profiles.push(p.get_item(&self.cfg));
         }
 
         let mut add_profile = icon_btn(add_icon(), None, colors::GOLD);
@@ -225,7 +225,7 @@ impl Application for Window {
 
         let import_profile = icon_btn(import_icon(), Message::Import.into(), colors::BLUE);
 
-        let location = row![config_path, location_btn, import_profile, add_profile]
+        let location = row![config_path, location_btn, add_profile, import_profile]
             .align_items(iced::Alignment::Center)
             .spacing(10);
 
@@ -241,19 +241,25 @@ impl Application for Window {
                 Error::ZipImport => "Error importing profile",
             };
 
-            let error_text = text(error_str)
-                // .style(iced::theme::Text::Color(color!(200, 0, 0)))
-            ;
-            let error_container = container(error_text).center_x().width(Length::Fill);
+            let error_text = text(error_str).size(20).style(theme::Text::Error);
+            let error_container = container(error_text)
+                .style(crate::theme::Container::Error)
+                .center_x()
+                .center_y()
+                .height(SIZE_LEN)
+                .width(Length::Fill);
 
             content = content.push(error_container);
         }
 
         if self.success {
-            let success_text = text("Success!")
-                // .style(iced::theme::Text::Color(color!(0, 255, 0)))
-            ;
-            let success_container = container(success_text).center_x().width(Length::Fill);
+            let success_text = text("Success!").size(20).style(theme::Text::Success);
+            let success_container = container(success_text)
+                .style(theme::Container::Success)
+                .center_x()
+                .center_y()
+                .height(SIZE_LEN)
+                .width(Length::Fill);
 
             content = content.push(success_container);
         }
