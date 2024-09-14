@@ -24,14 +24,20 @@ use crate::theme::Theme;
 
 use iced::{
     executor,
-    widget::{button, column, container, row, text, text_input, tooltip, Checkbox, Rule},
-    Application, Command, Font, Length, Settings,
+    widget::{column, container, row, text, text_input, tooltip, Checkbox, Rule},
+    window, Application, Command, Length, Settings, Size,
 };
 
 fn main() -> Result<(), iced::Error> {
     Window::run(Settings {
         fonts: vec![include_bytes!("../fonts/icons.ttf").as_slice().into()],
-        // default_font: Font::MONOSPACE,
+        window: window::Settings {
+            size: Size {
+                width: 300f32,
+                height: 600f32,
+            },
+            ..window::Settings::default()
+        },
         ..Settings::default()
     })
 }

@@ -7,6 +7,8 @@ use std::{
 use directories::ProjectDirs;
 use serde::{Deserialize, Serialize};
 
+use crate::cfg::Cfg;
+
 pub fn get_config_dir() -> PathBuf {
     let proj_dir =
         ProjectDirs::from("", "", "league_config_manager").expect("This should always resolve");
@@ -37,9 +39,8 @@ impl Config {
             .expect("Can't open config file");
         let reader = BufReader::new(config_file);
         let config: Config = serde_json::from_reader(reader).unwrap_or_else(|_| {
-            let config = Config {
-                ..Config::default()
-            };
+            let cfg_path = Self::try_cfg();
+            let config = Config { cfg_path };
             config.set_config();
             config
         });
@@ -80,5 +81,16 @@ impl Config {
 
     pub fn update(&self) {
         self.set_config();
+    }
+
+    fn try_cfg() -> Option<PathBuf> {
+        let folders = ["C:\\Riot Games\\League of Legends"].map(PathBuf::from);
+        for folder in folders {
+            let cfg = Cfg::new(&folder);
+            if cfg.is_ok() {
+                return Some(folder);
+            }
+        }
+        None
     }
 }

@@ -5,10 +5,7 @@ use std::{
     path::PathBuf,
 };
 
-use iced::{
-    widget::{button, container, horizontal_space, row, text, text_input, tooltip, Row},
-    Length,
-};
+use iced::widget::{container, horizontal_space, row, text, text_input, tooltip, Row};
 use zip::{write::SimpleFileOptions, CompressionMethod, ZipArchive, ZipWriter};
 
 use crate::{
