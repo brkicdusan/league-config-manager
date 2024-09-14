@@ -24,7 +24,7 @@ use crate::theme::Theme;
 
 use iced::{
     executor,
-    widget::{button, column, container, row, text, text_input, Checkbox, Rule},
+    widget::{button, column, container, row, text, text_input, tooltip, Checkbox, Rule},
     Application, Command, Font, Length, Settings,
 };
 
@@ -205,12 +205,24 @@ impl Application for Window {
 
     fn view(&self) -> iced::Element<'_, Self::Message, Theme> {
         let config_path = text_input("Config not found", self.config.path_to_str()).padding(10);
-        let location_btn = icon_btn(open_icon(), Message::FindLocation.into(), colors::GOLD);
+        let location_btn = tooltip(
+            icon_btn(open_icon(), Message::FindLocation.into(), colors::GOLD),
+            "Find \"League of Legends\" directory",
+            tooltip::Position::Bottom,
+        )
+        .style(theme::Container::Tooltip);
 
         let mut cb = Checkbox::new("Lock settings", self.readonly);
         if self.cfg.is_some() {
             cb = cb.on_toggle(Message::SetReadonly)
         }
+
+        let cb = tooltip(
+            cb,
+            "Settings can't be changed in game while this is active",
+            tooltip::Position::Bottom,
+        )
+        .style(theme::Container::Tooltip);
 
         let mut profiles = column![].align_items(iced::Alignment::Center).spacing(15);
 
@@ -223,7 +235,19 @@ impl Application for Window {
             add_profile = add_profile.on_press(Message::AddProfile);
         }
 
-        let import_profile = icon_btn(import_icon(), Message::Import.into(), colors::BLUE);
+        let add_profile = tooltip(
+            add_profile,
+            "Add current settings",
+            tooltip::Position::Bottom,
+        )
+        .style(theme::Container::Tooltip);
+
+        let import_profile = tooltip(
+            icon_btn(import_icon(), Message::Import.into(), colors::BLUE),
+            "Import profile from .zip file",
+            tooltip::Position::Bottom,
+        )
+        .style(theme::Container::Tooltip);
 
         let location = row![config_path, location_btn, add_profile, import_profile]
             .align_items(iced::Alignment::Center)
@@ -234,8 +258,12 @@ impl Application for Window {
         if let Some(e) = &self.error {
             let error_str = match e {
                 Error::DialogClosed => "Dialog closed without choosing the folder",
-                Error::WrongPath => "Wrong path",
-                Error::MissingPath => "Missing path",
+                Error::WrongPath => {
+                    "Wrong path (folder should look like \".../Riot Games/League of Legends/\""
+                }
+                Error::MissingPath => {
+                    "Missing path (choose the League of Legends install directory)"
+                }
                 Error::NameTaken => "Name is taken",
                 Error::ZipExport => "Error exporting profile",
                 Error::ZipImport => "Error importing profile",
@@ -269,6 +297,6 @@ impl Application for Window {
     }
 
     fn theme(&self) -> Self::Theme {
-        Theme::default()
+        Theme
     }
 }

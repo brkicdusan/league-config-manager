@@ -6,7 +6,7 @@ use std::{
 };
 
 use iced::{
-    widget::{button, container, horizontal_space, row, text, text_input, Row},
+    widget::{button, container, horizontal_space, row, text, text_input, tooltip, Row},
     Length,
 };
 use zip::{write::SimpleFileOptions, CompressionMethod, ZipArchive, ZipWriter};
@@ -17,7 +17,7 @@ use crate::{
     config::get_config_dir,
     error,
     message::Message,
-    theme::Theme,
+    theme::{self, Theme},
     widget::{cancel_icon, confirm_icon, edit_icon, icon_btn, share_icon, trash_icon, use_icon},
 };
 
@@ -207,30 +207,52 @@ impl Profile {
     }
 
     pub fn get_item(&self, cfg: &Option<Cfg>) -> Row<Message, Theme> {
-        let del_btn = icon_btn(
-            trash_icon(),
-            Message::RemoveProfile(self.name.clone()).into(),
-            colors::RED,
-        );
+        let del_btn = tooltip(
+            icon_btn(
+                trash_icon(),
+                Message::RemoveProfile(self.name.clone()).into(),
+                colors::RED,
+            ),
+            "Delete profile",
+            tooltip::Position::Bottom,
+        )
+        .style(theme::Container::Tooltip);
 
         let mut use_msg = None;
         if cfg.is_some() {
             use_msg = Some(Message::UseProfile(self.clone()));
         }
-        let use_btn = icon_btn(use_icon(), use_msg, colors::BLUE);
+        let use_btn = tooltip(
+            icon_btn(use_icon(), use_msg, colors::BLUE),
+            "Use this profile",
+            tooltip::Position::Bottom,
+        )
+        .style(theme::Container::Tooltip);
 
-        let export_btn = icon_btn(
-            share_icon(),
-            Message::Export(self.clone()).into(),
-            colors::BLUE,
-        );
+        let export_btn = tooltip(
+            icon_btn(
+                share_icon(),
+                Message::Export(self.clone()).into(),
+                colors::BLUE,
+            ),
+            "Export settings to .zip",
+            tooltip::Position::Bottom,
+        )
+        .style(theme::Container::Tooltip);
 
         let edit_btn = if !self.editing {
-            container(icon_btn(
-                edit_icon(),
-                Message::Edit(self.name.clone()).into(),
-                colors::BLUE,
-            ))
+            container(
+                tooltip(
+                    icon_btn(
+                        edit_icon(),
+                        Message::Edit(self.name.clone()).into(),
+                        colors::BLUE,
+                    ),
+                    "Edit name",
+                    tooltip::Position::Bottom,
+                )
+                .style(theme::Container::Tooltip),
+            )
         } else {
             container(
                 row![

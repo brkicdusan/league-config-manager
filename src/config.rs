@@ -37,7 +37,9 @@ impl Config {
             .expect("Can't open config file");
         let reader = BufReader::new(config_file);
         let config: Config = serde_json::from_reader(reader).unwrap_or_else(|_| {
-            let config = Config::default();
+            let config = Config {
+                ..Config::default()
+            };
             config.set_config();
             config
         });
@@ -64,6 +66,7 @@ impl Config {
         self.update();
     }
 
+    /// Write config file
     pub fn set_config(&self) {
         let config_file = OpenOptions::new()
             .write(true)

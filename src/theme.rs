@@ -1,5 +1,5 @@
 use crate::colors;
-use iced::widget::{button, checkbox, container, rule, text, text_input};
+use iced::widget::{button, checkbox, container, rule, text, text_input, tooltip};
 use iced::{application, Background, Border, Color};
 
 #[derive(Debug, Clone, Copy, Default)]
@@ -44,6 +44,7 @@ pub enum Container {
     Default,
     Error,
     Success,
+    Tooltip,
 }
 
 impl container::StyleSheet for Theme {
@@ -69,6 +70,17 @@ impl container::StyleSheet for Theme {
                     radius: 5.into(),
                 },
                 text_color: colors::GREEN.into(),
+                ..container::Appearance::default()
+            },
+            Container::Tooltip => container::Appearance {
+                background: Background::Color(colors::BG).into(),
+                border: Border {
+                    color: colors::BG,
+                    width: 1.0,
+                    radius: 10.into(),
+                },
+
+                text_color: colors::TEXT.into(),
                 ..container::Appearance::default()
             },
 
