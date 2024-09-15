@@ -48,7 +48,7 @@ struct Window {
     readonly: bool,
     error: Option<Error>,
     profiles: Vec<Profile>,
-    success: bool,
+    success: Option<String>,
 }
 
 impl Window {
@@ -99,7 +99,7 @@ impl Application for Window {
                 readonly,
                 error: err,
                 profiles,
-                success: false,
+                success: None,
             },
             Command::none(),
         )
@@ -109,7 +109,7 @@ impl Application for Window {
         String::from("League Config Manager")
     }
     fn update(&mut self, message: Self::Message) -> Command<Message> {
-        self.success = false;
+        self.success = None;
         match message {
             Message::FindLocation => {
                 Command::perform(dialog::find_config_dialog(), Message::SetLocation)
@@ -151,7 +151,7 @@ impl Application for Window {
                 if let Some(cfg) = &self.cfg {
                     prof.copy_files(cfg);
                     cfg.set_readonly(self.readonly);
-                    self.success = true;
+                    self.success = Some(format!("Using {}", prof.get_name()))
                 }
                 Command::none()
             }
@@ -162,11 +162,12 @@ impl Application for Window {
             }
             Message::Confirm(name) => {
                 let prof = self.get_profile_from_name(&name).unwrap();
+
                 if let Err(e) = prof.edit_confirm() {
                     self.error = Some(e);
                 } else {
+                    self.success = Some(format!("Changed name to {}", &prof.get_name()));
                     self.error = None;
-                    self.success = true;
                 }
                 Command::none()
             }
@@ -185,7 +186,7 @@ impl Application for Window {
             }
             Message::SetExport(Ok((export_path, profile))) => {
                 match profile.zip(export_path) {
-                    Ok(_) => self.success = true,
+                    Ok(_) => self.success = Some("Exported profile".to_string()),
                     Err(_) => self.error = Some(Error::ZipExport),
                 };
                 Command::none()
@@ -286,8 +287,10 @@ impl Application for Window {
             content = content.push(error_container);
         }
 
-        if self.success {
-            let success_text = text("Success!").size(20).style(theme::Text::Success);
+        if let Some(success) = &self.success {
+            let success_text = text(format!("Success! - {}", success))
+                .size(20)
+                .style(theme::Text::Success);
             let success_container = container(success_text)
                 .style(theme::Container::Success)
                 .center_x()
