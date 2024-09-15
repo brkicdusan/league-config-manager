@@ -1,4 +1,4 @@
-//![windows_subsystem = "windows"]
+#![windows_subsystem = "windows"]
 
 mod cfg;
 mod colors;
@@ -33,7 +33,7 @@ fn main() -> Result<(), iced::Error> {
         fonts: vec![include_bytes!("../fonts/icons.ttf").as_slice().into()],
         window: window::Settings {
             size: Size {
-                width: 300f32,
+                width: 500f32,
                 height: 600f32,
             },
             ..window::Settings::default()
