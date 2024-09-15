@@ -2,6 +2,8 @@
 name = "league_config_manager"
 version = "0.1.0"
 edition = "2021"
+authors = ["Dusan <brkicdusan05@gmail.com>"]
+description = "Config manager for League of Legends"
 
 [dependencies]
 zip = { version = "2.2.0" }

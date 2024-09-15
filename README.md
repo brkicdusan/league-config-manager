@@ -1,6 +1,9 @@
 <h1 align="center">League config manager</h1>
 
+<div align="center">
 League config manager is a tool that helps manage League of Legends settings.
+  <img alt="App screenshot" src="./assets/app.png" width="50%">
+</div>
 
 ## Table of Contents
 
@@ -14,7 +17,7 @@ League config manager is a tool that helps manage League of Legends settings.
   - [Exporting settings](#exporting-settings)
   - [Changing profile](#changing-profile)
 - [Troubleshooting](#troubleshooting)
-- [Contributing / Feedback](#contributing-/-feedback)
+- [Contributing / Feedback](#contributing--feedback)
 
 ## Features
 
@@ -37,6 +40,7 @@ Planned features:
 1. Go to [releases](https://github.com/brkicdusan/league-config-manager/releases)
 1. Open the assets section under the latest release
 1. Download `.exe` file
+1. To run the file you need to click `More info` (under the text) > `Run anyway` (bottom right) (app is safe to use if you have downloaded it from the official github, this should disappear after enough people use the app)
 
 ## Usage
 
@@ -46,7 +50,7 @@ Planned features:
 
 If League of Legends is not installed not installed at the default directory you will have to select it manually.
 
-To find where the game is installed Go to Riot Client > Settings > League of Legends > Install directory
+To find where the game is installed Go to `Riot Client` > `Profile` (top right) > `Settings` > `League of Legends` > `Install path`
 
 #### Locking settings
 
