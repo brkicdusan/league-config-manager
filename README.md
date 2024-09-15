@@ -44,35 +44,35 @@ Planned features:
 
 ## Usage
 
-**IMPORTANT** You shouldn't change profiles in-game. Best way to do it would be to go into practice tool set the settings that you like in game and then add those settings as a profile after you laeve the game.
+**IMPORTANT**: You shouldn't change profiles in-game. Best way to do it would be to go into practice tool set the settings that you like in game and then add those settings as a profile after you laeve the game.
 
-#### Finding League of Legends folder
+### Finding League of Legends folder
 
 If League of Legends is not installed not installed at the default directory you will have to select it manually.
 
 To find where the game is installed Go to `Riot Client` > `Profile` (top right) > `Settings` > `League of Legends` > `Install path`
 
-#### Locking settings
+### Locking settings
 
 Lock settings checkbox locks settings making the settings reset to the state you locked them in after every game and after switching to any account on the same computer.
 
 Changing profiles is still possible while this setting is on, the same rules will apply after using a profile.
 
-#### Adding current settings as a profile
+### Adding current settings as a profile
 
 Press the plus button in the top row to add settings profile.
 
 **IMPORTANT:** This only saves the settings from the time you pressed the button, any changes after won't be saved to the profile, you will have to add a new profile to save them.
 
-#### Importing settings
+### Importing settings
 
 Press the import button in the top row to import settings from a `.zip` file.
 
-#### Exporting settings
+### Exporting settings
 
 Press the export button on the profile that you want to export.
 
-#### Changing profile
+### Changing profile
 
 To use settings from a profile press the use button (second button from the left)
 
