@@ -112,6 +112,8 @@ impl Application for Window {
     }
     fn update(&mut self, message: Self::Message) -> Command<Message> {
         self.success = None;
+        self.error = None;
+
         match message {
             Message::FindLocation => {
                 Command::perform(dialog::find_config_dialog(), Message::SetLocation)
