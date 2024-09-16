@@ -30,8 +30,6 @@ use iced::{
 
 
 fn main() -> Result<(), iced::Error> {
-    
-
     Window::run(Settings {
         fonts: vec![include_bytes!("../fonts/icons.ttf").as_slice().into()],
         window: window::Settings {
@@ -39,7 +37,7 @@ fn main() -> Result<(), iced::Error> {
                 width: 500f32,
                 height: 600f32,
             },
-            icon: Some(window::icon::from_file("./assets/mobile-logo.png").unwrap()),
+            icon: window::icon::from_file_data(include_bytes!("../assets/mobile-logo.png"), Some(image::ImageFormat::Png)).map(Some).unwrap_or(None),
             ..window::Settings::default()
         },
         ..Settings::default()
