@@ -41,7 +41,7 @@ Planned features:
 1. Go to [releases](https://github.com/brkicdusan/league-config-manager/releases)
 1. Open the assets section under the latest release
 1. Download `.exe` file
-1. To run the file you need to click `More info` (under the text) > `Run anyway` (bottom right) (app is safe to use if you have downloaded it from the official github, this should disappear after enough people use the app)
+1. To run the file you need to click `More info` (under the text) > `Run anyway` (bottom right) (app is safe to use if you have downloaded it from the official github, you can build the app yourself if you don't trust it, this should disappear after enough people use the app and windows defender stops flagging it)
 
 ## Usage
 
