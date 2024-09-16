@@ -24,11 +24,14 @@ use crate::theme::Theme;
 
 use iced::{
     executor,
-    widget::{column, container, row, text, text_input, tooltip, Checkbox, Rule},
-    window, Application, Command, Length, Settings, Size,
+    widget::{ column, container, row, text, text_input, tooltip, Checkbox, Rule},
+    window::{self}, Application, Command, Length, Settings, Size,
 };
 
+
 fn main() -> Result<(), iced::Error> {
+    
+
     Window::run(Settings {
         fonts: vec![include_bytes!("../fonts/icons.ttf").as_slice().into()],
         window: window::Settings {
@@ -36,6 +39,7 @@ fn main() -> Result<(), iced::Error> {
                 width: 500f32,
                 height: 600f32,
             },
+            icon: Some(window::icon::from_file("./assets/mobile-logo.png").unwrap()),
             ..window::Settings::default()
         },
         ..Settings::default()
@@ -151,7 +155,7 @@ impl Application for Window {
                 if let Some(cfg) = &self.cfg {
                     prof.copy_files(cfg);
                     cfg.set_readonly(self.readonly);
-                    self.success = Some(format!("Using {}", prof.get_name()))
+                    self.success = Some(format!("Using \"{}\"", prof.get_name()))
                 }
                 Command::none()
             }

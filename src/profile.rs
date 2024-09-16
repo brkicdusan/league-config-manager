@@ -5,7 +5,7 @@ use std::{
     path::PathBuf,
 };
 
-use iced::widget::{container, horizontal_space, row, text, text_input, tooltip, Row};
+use iced::widget::{container, row, text, text_input, tooltip, Row};
 use zip::{write::SimpleFileOptions, CompressionMethod, ZipArchive, ZipWriter};
 
 use crate::{
@@ -270,18 +270,19 @@ impl Profile {
 
         let mut profile_row = row![].spacing(10).align_items(iced::Alignment::Center);
         if !self.editing {
-            profile_row = profile_row.push(text(&self.name));
+            profile_row = profile_row.push(text(&self.name).width(iced::Length::Fill));
         }
 
         if self.editing {
             profile_row = profile_row.push(
                 text_input("", &self.edit_name)
                     .padding(10)
-                    .on_input(|s| Message::OnChange(self.name.clone(), s)),
+                    .on_input(|s| Message::OnChange(self.name.clone(), s))
+                    .width(iced::Length::Fill),
             );
         }
 
-        profile_row = profile_row.push(horizontal_space());
+        // profile_row = profile_row.push(horizontal_space());
         profile_row = profile_row.push(edit_btn);
         profile_row = profile_row.push(use_btn);
         profile_row = profile_row.push(export_btn);

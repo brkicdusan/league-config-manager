@@ -29,8 +29,8 @@ impl text::StyleSheet for Theme {
 
     fn appearance(&self, style: Self::Style) -> text::Appearance {
         let color = match style {
-            Text::Error => colors::RED,
-            Text::Success => colors::GREEN,
+            // Text::Error => colors::RED,
+            // Text::Success => colors::GREEN,
             _ => colors::TEXT,
         }
         .into();
@@ -53,9 +53,9 @@ impl container::StyleSheet for Theme {
     fn appearance(&self, style: &Self::Style) -> container::Appearance {
         match style {
             Container::Error => container::Appearance {
-                background: Background::Color(colors::RED_BG).into(),
+                background: Background::Color(colors::RED).into(),
                 border: Border {
-                    color: colors::RED,
+                    color: colors::RED_BG,
                     width: 2.0,
                     radius: 5.into(),
                 },
@@ -63,9 +63,9 @@ impl container::StyleSheet for Theme {
                 ..container::Appearance::default()
             },
             Container::Success => container::Appearance {
-                background: Background::Color(colors::GREEN_BG).into(),
+                background: Background::Color(colors::GREEN).into(),
                 border: Border {
-                    color: colors::GREEN,
+                    color: colors::GREEN_BG,
                     width: 2.0,
                     radius: 5.into(),
                 },
@@ -124,15 +124,22 @@ impl button::StyleSheet for Theme {
     fn hovered(&self, style: &Self::Style) -> button::Appearance {
         let active = self.active(style);
 
+        let color = match style {
+            Button::Fill(colors::GOLD) => colors::GOLD_LIGHT,
+            Button::Fill(colors::GREEN) => colors::GREEN_BG,
+            Button::Fill(colors::RED) => colors::RED_BG,
+            _ => colors::BLUE_DARK,
+        };
+
         button::Appearance {
             shadow_offset: active.shadow_offset + iced::Vector::new(0.0, 1.0),
-            background: Background::Color(match style {
-                Button::Fill(colors::GOLD) => colors::GOLD_LIGHT,
-                Button::Fill(colors::GREEN) => colors::GREEN_BG,
-                Button::Fill(colors::RED) => colors::RED_BG,
-                _ => colors::BLUE_DARK,
-            })
+            background: Background::Color(color)
             .into(),
+            border: Border {
+                color,
+                width: 5.0,
+                radius: 5.into(),
+            },
             ..active
         }
     }
