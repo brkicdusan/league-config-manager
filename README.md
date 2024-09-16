@@ -2,6 +2,7 @@
 
 <div align="center">
 League config manager is a tool that helps manage League of Legends settings.
+<br /><br />
   <img alt="App screenshot" src="./assets/app.png" width="50%">
 </div>
 
