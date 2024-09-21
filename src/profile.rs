@@ -213,7 +213,7 @@ impl Profile {
             "Delete profile",
             tooltip::Position::Bottom,
         )
-        .style(theme::Container::Tooltip);
+        .class(theme::Container::Tooltip);
 
         let mut use_msg = None;
         if cfg.is_some() {
@@ -224,7 +224,7 @@ impl Profile {
             "Use this profile",
             tooltip::Position::Bottom,
         )
-        .style(theme::Container::Tooltip);
+        .class(theme::Container::Tooltip);
 
         let export_btn = tooltip(
             icon_btn(
@@ -235,7 +235,7 @@ impl Profile {
             "Export settings to .zip",
             tooltip::Position::Bottom,
         )
-        .style(theme::Container::Tooltip);
+        .class(theme::Container::Tooltip);
 
         let edit_btn = if !self.editing {
             container(
@@ -248,7 +248,7 @@ impl Profile {
                     "Edit name",
                     tooltip::Position::Bottom,
                 )
-                .style(theme::Container::Tooltip),
+                .class(theme::Container::Tooltip),
             )
         } else {
             container(
@@ -268,7 +268,7 @@ impl Profile {
             )
         };
 
-        let mut profile_row = row![].spacing(10).align_items(iced::Alignment::Center);
+        let mut profile_row = row![].spacing(10).align_y(iced::Alignment::Center);
         if !self.editing {
             profile_row = profile_row.push(text(&self.name).width(iced::Length::Fill));
         }

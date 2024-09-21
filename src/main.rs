@@ -24,24 +24,49 @@ use crate::theme::Theme;
 
 use iced::{
     executor,
-    widget::{ column, container, row, text, text_input, tooltip, Checkbox, Rule},
-    window::{self}, Application, Command, Length, Settings, Size,
+    widget::{column, container, row, text, text_input, tooltip, Checkbox, Rule},
+    window::{self},
+    Application, Length, Settings, Size, Task,
 };
 
-
 fn main() -> Result<(), iced::Error> {
-    Window::run(Settings {
-        fonts: vec![include_bytes!("../fonts/icons.ttf").as_slice().into()],
-        window: window::Settings {
+    // Window::application(Settings {
+    //     fonts: vec![include_bytes!("../fonts/icons.ttf").as_slice().into()],
+    //     window: window::Settings {
+    //         size: Size {
+    //             width: 500f32,
+    //             height: 600f32,
+    //         },
+    //         icon: window::icon::from_file_data(
+    //             include_bytes!("../assets/mobile-logo.png"),
+    //             Some(image::ImageFormat::Png),
+    //         )
+    //         .map(Some)
+    //         .unwrap_or(None),
+    //         ..window::Settings::default()
+    //     },
+    //     ..Settings::default()
+    // })
+    // iced::application(Window::title(), Window::update, Window::view)
+    iced::application("test title", Window::update, Window::view)
+        .theme(|_| {
+            return crate::theme::Theme;
+        })
+        .font(include_bytes!("../fonts/icons.ttf").as_slice())
+        .window(window::Settings {
             size: Size {
                 width: 500f32,
                 height: 600f32,
             },
-            icon: window::icon::from_file_data(include_bytes!("../assets/mobile-logo.png"), Some(image::ImageFormat::Png)).map(Some).unwrap_or(None),
+            icon: window::icon::from_file_data(
+                include_bytes!("../assets/mobile-logo.png"),
+                Some(image::ImageFormat::Png),
+            )
+            .map(Some)
+            .unwrap_or(None),
             ..window::Settings::default()
-        },
-        ..Settings::default()
-    })
+        })
+        .run_with(Window::new)
 }
 
 struct Window {
@@ -54,7 +79,7 @@ struct Window {
 }
 
 impl Window {
-    fn set_cfg(&mut self, location: &Path) {
+    fn set_cfg(&mut self, location: &Path) -> Option<Error> {
         match Cfg::new(location) {
             Ok(cfg) => {
                 self.readonly = cfg.get_readonly();
@@ -66,6 +91,7 @@ impl Window {
                 self.error = Some(e);
             }
         }
+        self.error
     }
 
     fn get_profile_from_name(&mut self, name: &String) -> Option<&mut Profile> {
@@ -73,15 +99,15 @@ impl Window {
     }
 }
 
-impl Application for Window {
-    type Message = Message;
-    type Executor = executor::Default;
+impl Window {
+    // type Message = Message;
+    // type Executor = executor::Default;
+    //
+    // type Theme = Theme;
+    //
+    // type Flags = ();
 
-    type Theme = Theme;
-
-    type Flags = ();
-
-    fn new(_flags: Self::Flags) -> (Window, iced::Command<Message>) {
+    fn new() -> (Window, iced::Task<Message>) {
         let conf = Config::new();
         let mut cfg = None;
         let mut readonly = false;
@@ -103,43 +129,45 @@ impl Application for Window {
                 profiles,
                 success: None,
             },
-            Command::none(),
+            Task::none(),
         )
     }
 
-    fn title(&self) -> String {
+    fn title() -> String {
         String::from("League Config Manager")
     }
-    fn update(&mut self, message: Self::Message) -> Command<Message> {
+
+    fn update(&mut self, message: Message) -> Task<Message> {
         self.success = None;
         self.error = None;
 
         match message {
             Message::FindLocation => {
-                Command::perform(dialog::find_config_dialog(), Message::SetLocation)
+                Task::perform(dialog::find_config_dialog(), Message::SetLocation)
             }
             Message::SetLocation(Ok(location)) => {
-                self.set_cfg(&location);
-                self.config.set_path(Some(location));
-                Command::none()
+                if self.set_cfg(&location).is_none() {
+                    self.config.set_path(Some(location));
+                }
+                Task::none()
             }
             Message::SetLocation(Err(error)) => {
                 self.error = Some(error);
-                Command::none()
+                Task::none()
             }
             Message::SetReadonly(readonly) => {
                 self.readonly = readonly;
                 if let Some(c) = &self.cfg {
                     c.set_readonly(readonly);
                 }
-                Command::none()
+                Task::none()
             }
             Message::AddProfile => {
                 if let Some(cfg) = &self.cfg {
                     let new_profile = Profile::new(cfg);
                     self.profiles.push(new_profile);
                 }
-                Command::none()
+                Task::none()
             }
             Message::RemoveProfile(s) => {
                 for (i, p) in self.profiles.iter().enumerate() {
@@ -149,7 +177,7 @@ impl Application for Window {
                         break;
                     }
                 }
-                Command::none()
+                Task::none()
             }
             Message::UseProfile(prof) => {
                 if let Some(cfg) = &self.cfg {
@@ -157,12 +185,12 @@ impl Application for Window {
                     cfg.set_readonly(self.readonly);
                     self.success = Some(format!("Using \"{}\"", prof.get_name()))
                 }
-                Command::none()
+                Task::none()
             }
             Message::Edit(name) => {
                 let prof = self.get_profile_from_name(&name).unwrap();
                 prof.edit_start();
-                Command::none()
+                Task::none()
             }
             Message::Confirm(name) => {
                 let prof = self.get_profile_from_name(&name).unwrap();
@@ -173,55 +201,53 @@ impl Application for Window {
                     self.success = Some(format!("Changed name to {}", &prof.get_name()));
                     self.error = None;
                 }
-                Command::none()
+                Task::none()
             }
             Message::Reset(name) => {
                 let prof = self.get_profile_from_name(&name).unwrap();
                 prof.edit_reset();
-                Command::none()
+                Task::none()
             }
             Message::OnChange(name, new_name) => {
                 let prof = self.get_profile_from_name(&name).unwrap();
                 prof.edit_change(new_name);
-                Command::none()
+                Task::none()
             }
-            Message::Export(profile) => {
-                Command::perform(export_zip_path(profile), Message::SetExport)
-            }
+            Message::Export(profile) => Task::perform(export_zip_path(profile), Message::SetExport),
             Message::SetExport(Ok((export_path, profile))) => {
                 match profile.zip(export_path) {
                     Ok(_) => self.success = Some("Exported profile".to_string()),
                     Err(_) => self.error = Some(Error::ZipExport),
                 };
-                Command::none()
+                Task::none()
             }
             Message::SetExport(Err(e)) => {
                 self.error = Some(e);
-                Command::none()
+                Task::none()
             }
             Message::SetImport(Ok(import_path)) => {
                 match Profile::from_zip(&import_path) {
                     Ok(profile) => self.profiles.push(profile),
                     Err(_) => self.error = Some(Error::ZipImport),
                 }
-                Command::none()
+                Task::none()
             }
             Message::SetImport(Err(e)) => {
                 self.error = Some(e);
-                Command::none()
+                Task::none()
             }
-            Message::Import => Command::perform(dialog::import_zip_path(), Message::SetImport),
+            Message::Import => Task::perform(dialog::import_zip_path(), Message::SetImport),
         }
     }
 
-    fn view(&self) -> iced::Element<'_, Self::Message, Theme> {
+    fn view(&self) -> iced::Element<'_, Message, Theme> {
         let config_path = text_input("Config not found", self.config.path_to_str()).padding(10);
         let location_btn = tooltip(
             icon_btn(open_icon(), Message::FindLocation.into(), colors::GOLD),
             "Find \"League of Legends\" directory",
             tooltip::Position::Bottom,
         )
-        .style(theme::Container::Tooltip);
+        .class(theme::Container::Tooltip);
 
         let mut cb = Checkbox::new("Lock settings", self.readonly);
         if self.cfg.is_some() {
@@ -233,9 +259,9 @@ impl Application for Window {
             "Settings can't be changed in game while this is active",
             tooltip::Position::Bottom,
         )
-        .style(theme::Container::Tooltip);
+        .class(theme::Container::Tooltip);
 
-        let mut profiles = column![].align_items(iced::Alignment::Center).spacing(15);
+        let mut profiles = column![].align_x(iced::Alignment::Center).spacing(15);
 
         for p in &self.profiles {
             profiles = profiles.push(p.get_item(&self.cfg));
@@ -251,17 +277,17 @@ impl Application for Window {
             "Add current settings",
             tooltip::Position::Bottom,
         )
-        .style(theme::Container::Tooltip);
+        .class(theme::Container::Tooltip);
 
         let import_profile = tooltip(
             icon_btn(import_icon(), Message::Import.into(), colors::BLUE),
             "Import profile from .zip file",
             tooltip::Position::Bottom,
         )
-        .style(theme::Container::Tooltip);
+        .class(theme::Container::Tooltip);
 
         let location = row![config_path, location_btn, add_profile, import_profile]
-            .align_items(iced::Alignment::Center)
+            .align_y(iced::Alignment::Center)
             .spacing(10);
 
         let mut content = column![location, cb, Rule::horizontal(0), profiles].spacing(10);
@@ -280,13 +306,13 @@ impl Application for Window {
                 Error::ZipImport => "Error importing profile",
             };
 
-            let error_text = text(error_str).size(20).style(theme::Text::Error);
+            let error_text = text(error_str).size(20).class(theme::Text::Error);
             let error_container = container(error_text)
-                .style(crate::theme::Container::Error)
-                .center_x()
-                .center_y()
-                .height(SIZE_LEN)
-                .width(Length::Fill);
+                .class(crate::theme::Container::Error)
+                .center_x(Length::Fill)
+                .center_y(SIZE_LEN);
+            // .height(SIZE_LEN)
+            // .width(Length::Fill);
 
             content = content.push(error_container);
         }
@@ -294,22 +320,26 @@ impl Application for Window {
         if let Some(success) = &self.success {
             let success_text = text(format!("Success! - {}", success))
                 .size(20)
-                .style(theme::Text::Success);
+                .class(theme::Text::Success);
             let success_container = container(success_text)
-                .style(theme::Container::Success)
-                .center_x()
-                .center_y()
-                .height(SIZE_LEN)
-                .width(Length::Fill);
+                .class(theme::Container::Success)
+                .center_x(Length::Fill)
+                .center_y(SIZE_LEN);
+            // .width(Length::Fill);
+            // .height(SIZE_LEN)
 
             content = content.push(success_container);
         }
 
-        container(content).padding(10).center_x().center_y().into()
+        container(content)
+            .padding(10)
+            .center_x(Length::Fill)
+            // .center_y(Length::Fill)
+            .into()
         // container(location).padding(10).into()
     }
 
-    fn theme(&self) -> Self::Theme {
-        Theme
-    }
+    // fn theme() -> iced::Theme {
+    //     Theme
+    // }
 }

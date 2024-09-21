@@ -10,7 +10,7 @@ pub(crate) fn icon<'a>(codepoint: char) -> Element<'a, Message, Theme> {
 
     text(codepoint)
         .font(ICON_FONT)
-        .horizontal_alignment(iced::alignment::Horizontal::Center)
+        .align_x(iced::alignment::Horizontal::Center)
         .into()
 }
 
@@ -57,9 +57,9 @@ pub(crate) fn icon_btn(
     msg: Option<Message>,
     col: Color,
 ) -> button::Button<'_, Message, Theme> {
-    button(container(ico).center_y().center_x())
+    button(container(ico).center_y(SIZE_LEN).center_x(SIZE_LEN))
         .height(SIZE_LEN)
         .width(SIZE_LEN)
         .on_press_maybe(msg)
-        .style(crate::theme::Button::Fill(col))
+        .class(crate::theme::Button::Fill(col))
 }
