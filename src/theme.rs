@@ -14,15 +14,6 @@ impl iced::application::DefaultStyle for Theme {
     }
 }
 
-// impl application::Catalog for Theme {
-//     type Class<'a> = ();
-//
-//     fn appearance(&self, _style: &Self::Style) -> application::Style {
-//             text_color: colors::TEXT,
-//         }
-//     }
-// }
-
 #[derive(Debug, Clone, Copy, Default)]
 pub enum Text {
     #[default]
@@ -38,13 +29,8 @@ impl iced::widget::text::Catalog for Theme {
         Text::Default
     }
 
-    fn style(&self, class: &Self::Class<'_>) -> text::Style {
-        let color = match class {
-            // Text::Error => colors::RED,
-            // Text::Success => colors::GREEN,
-            _ => colors::TEXT,
-        }
-        .into();
+    fn style(&self, _class: &Self::Class<'_>) -> text::Style {
+        let color = colors::TEXT.into();
         text::Style { color }
     }
 }
@@ -181,60 +167,12 @@ pub enum TextInput {
 impl text_input::Catalog for Theme {
     type Class<'a> = TextInput;
 
-    // fn active(&self, style: &Self::Style) -> text_input::Style {
-    //     match style {
-    //         TextInput::Default => text_input::Style {
-    //             background: colors::BG.into(),
-    //             border: Border {
-    //                 color: colors::TEXT,
-    //                 width: 1.0,
-    //                 radius: 5.into(),
-    //             },
-    //             icon_color: colors::TEXT,
-    //         },
-    //     }
-    // }
-    //
-    // fn disabled(&self, style: &Self::Style) -> text_input::Style {
-    //     match style {
-    //         TextInput::Default => text_input::Style {
-    //             background: colors::BG.into(),
-    //             border: Border {
-    //                 color: colors::GOLD,
-    //                 width: 2.0,
-    //                 radius: 5.into(),
-    //             },
-    //             icon_color: colors::GOLD_LIGHT,
-    //         },
-    //     }
-    // }
-
-    // fn focused(&self, style: &Self::Style) -> text_input::Style {
-    //     self.active(style)
-    // }
-    //
-    // fn placeholder_color(&self, _style: &Self::Style) -> iced::Color {
-    //     colors::GOLD_LIGHT
-    // }
-    //
-    // fn value_color(&self, _style: &Self::Style) -> iced::Color {
-    //     colors::TEXT
-    // }
-    //
-    // fn disabled_color(&self, _style: &Self::Style) -> iced::Color {
-    //     colors::GOLD_LIGHT
-    // }
-    //
-    // fn selection_color(&self, _style: &Self::Style) -> iced::Color {
-    //     colors::TEXT
-    // }
-
     fn default<'a>() -> Self::Class<'a> {
         TextInput::Default
     }
 
     fn style(&self, _class: &Self::Class<'_>, status: text_input::Status) -> text_input::Style {
-        let flag = (status == text_input::Status::Disabled);
+        let flag = status == text_input::Status::Disabled;
         let text_color = if flag {
             colors::GOLD_LIGHT
         } else {
@@ -253,58 +191,13 @@ impl text_input::Catalog for Theme {
             placeholder: text_color,
             icon: text_color,
             value: text_color,
-            selection: text_color,
+            selection: colors::BLUE_DARK,
         }
     }
 }
 
 impl checkbox::Catalog for Theme {
     type Class<'a> = ();
-
-    // fn active(&self, _style: &Self::Style, _is_checked: bool) -> checkbox::Style {
-    //     checkbox::Style {
-    //         background: colors::BG.into(),
-    //         border: Border {
-    //             color: colors::GOLD,
-    //             width: 1.0,
-    //             radius: 5.0.into(),
-    //         },
-    //         icon_color: colors::GOLD,
-    //         text_color: colors::GOLD.into(),
-    //     }
-    // }
-    //
-    // fn disabled(&self, style: &Self::Style, is_checked: bool) -> checkbox::Style {
-    //     let active = self.active(style, is_checked);
-    //
-    //     let color = Color {
-    //         a: active.icon_color.a * 0.5,
-    //         ..active.icon_color
-    //     };
-    //
-    //     checkbox::Style {
-    //         icon_color: color,
-    //         text_color: color.into(),
-    //         border: Border {
-    //             color,
-    //             ..active.border
-    //         },
-    //         ..active
-    //     }
-    // }
-    //
-    // fn hovered(&self, _style: &Self::Style, _is_checked: bool) -> checkbox::Style {
-    //     checkbox::Style {
-    //         background: colors::BG.into(),
-    //         border: Border {
-    //             color: colors::GOLD_LIGHT,
-    //             width: 1.0,
-    //             radius: 5.0.into(),
-    //         },
-    //         icon_color: colors::GOLD_LIGHT,
-    //         text_color: colors::GOLD_LIGHT.into(),
-    //     }
-    // }
 
     fn default<'a>() -> Self::Class<'a> {}
 
@@ -344,13 +237,4 @@ impl rule::Catalog for Theme {
             fill_mode: rule::FillMode::Full,
         }
     }
-
-    // fn style(&self, _style: &Self::Style) -> rule::Style {
-    //     rule::Style {
-    //         color: colors::GOLD,
-    //         width: 1,
-    //         radius: 1.into(),
-    //         fill_mode: rule::FillMode::Full,
-    //     }
-    // }
 }

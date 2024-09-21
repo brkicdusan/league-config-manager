@@ -23,35 +23,15 @@ use std::path::Path;
 use crate::theme::Theme;
 
 use iced::{
-    executor,
+    advanced::graphics::image::image_rs::ImageFormat,
     widget::{column, container, row, text, text_input, tooltip, Checkbox, Rule},
     window::{self},
-    Application, Length, Settings, Size, Task,
+    Length, Size, Task,
 };
 
 fn main() -> Result<(), iced::Error> {
-    // Window::application(Settings {
-    //     fonts: vec![include_bytes!("../fonts/icons.ttf").as_slice().into()],
-    //     window: window::Settings {
-    //         size: Size {
-    //             width: 500f32,
-    //             height: 600f32,
-    //         },
-    //         icon: window::icon::from_file_data(
-    //             include_bytes!("../assets/mobile-logo.png"),
-    //             Some(image::ImageFormat::Png),
-    //         )
-    //         .map(Some)
-    //         .unwrap_or(None),
-    //         ..window::Settings::default()
-    //     },
-    //     ..Settings::default()
-    // })
-    // iced::application(Window::title(), Window::update, Window::view)
-    iced::application("test title", Window::update, Window::view)
-        .theme(|_| {
-            return crate::theme::Theme;
-        })
+    iced::application("League Config Manager", Window::update, Window::view)
+        .theme(|_| crate::theme::Theme)
         .font(include_bytes!("../fonts/icons.ttf").as_slice())
         .window(window::Settings {
             size: Size {
@@ -60,7 +40,7 @@ fn main() -> Result<(), iced::Error> {
             },
             icon: window::icon::from_file_data(
                 include_bytes!("../assets/mobile-logo.png"),
-                Some(image::ImageFormat::Png),
+                Some(ImageFormat::Png),
             )
             .map(Some)
             .unwrap_or(None),
@@ -100,13 +80,6 @@ impl Window {
 }
 
 impl Window {
-    // type Message = Message;
-    // type Executor = executor::Default;
-    //
-    // type Theme = Theme;
-    //
-    // type Flags = ();
-
     fn new() -> (Window, iced::Task<Message>) {
         let conf = Config::new();
         let mut cfg = None;
@@ -131,10 +104,6 @@ impl Window {
             },
             Task::none(),
         )
-    }
-
-    fn title() -> String {
-        String::from("League Config Manager")
     }
 
     fn update(&mut self, message: Message) -> Task<Message> {
@@ -311,8 +280,6 @@ impl Window {
                 .class(crate::theme::Container::Error)
                 .center_x(Length::Fill)
                 .center_y(SIZE_LEN);
-            // .height(SIZE_LEN)
-            // .width(Length::Fill);
 
             content = content.push(error_container);
         }
@@ -325,21 +292,10 @@ impl Window {
                 .class(theme::Container::Success)
                 .center_x(Length::Fill)
                 .center_y(SIZE_LEN);
-            // .width(Length::Fill);
-            // .height(SIZE_LEN)
 
             content = content.push(success_container);
         }
 
-        container(content)
-            .padding(10)
-            .center_x(Length::Fill)
-            // .center_y(Length::Fill)
-            .into()
-        // container(location).padding(10).into()
+        container(content).padding(10).center_x(Length::Fill).into()
     }
-
-    // fn theme() -> iced::Theme {
-    //     Theme
-    // }
 }

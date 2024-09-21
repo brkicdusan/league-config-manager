@@ -159,7 +159,6 @@ impl Profile {
             }
         }
         self.editing = false;
-        // TODO:check if new name is valid name for dir
         let dir = get_config_dir();
         fs::rename(dir.join(&self.name), dir.join(&self.edit_name)).unwrap();
         self.name.clone_from(&self.edit_name);
@@ -282,7 +281,6 @@ impl Profile {
             );
         }
 
-        // profile_row = profile_row.push(horizontal_space());
         profile_row = profile_row.push(edit_btn);
         profile_row = profile_row.push(use_btn);
         profile_row = profile_row.push(export_btn);
