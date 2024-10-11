@@ -1,4 +1,4 @@
-use crate::{error::Error, profile::Profile};
+use crate::{error::Error, profile::Profile, websocket};
 
 use std::path::PathBuf;
 
@@ -18,4 +18,5 @@ pub(crate) enum Message {
     SetExport(Result<(PathBuf, Profile), Error>),
     Import,
     SetImport(Result<PathBuf, Error>),
+    WebsocketEvent(websocket::Event),
 }

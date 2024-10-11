@@ -8,6 +8,7 @@ mod error;
 mod message;
 mod profile;
 mod theme;
+mod websocket;
 mod widget;
 
 use cfg::Cfg;
@@ -16,6 +17,7 @@ use dialog::export_zip_path;
 use error::Error;
 use message::Message;
 use profile::Profile;
+use websocket::connect;
 use widget::{add_icon, icon_btn, import_icon, open_icon, SIZE_LEN};
 
 use std::path::Path;
@@ -26,12 +28,13 @@ use iced::{
     advanced::graphics::image::image_rs::ImageFormat,
     widget::{column, container, row, text, text_input, tooltip, Checkbox, Rule},
     window::{self},
-    Length, Size, Task,
+    Length, Size, Subscription, Task,
 };
 
-fn main() -> Result<(), iced::Error> {
+#[tokio::main]
+async fn main() -> Result<(), iced::Error> {
     iced::application("League Config Manager", Window::update, Window::view)
-        .theme(|_| crate::theme::Theme)
+        .theme(|_| Theme)
         .font(include_bytes!("../fonts/icons.ttf").as_slice())
         .window(window::Settings {
             size: Size {
@@ -46,6 +49,7 @@ fn main() -> Result<(), iced::Error> {
             .unwrap_or(None),
             ..window::Settings::default()
         })
+        .subscription(Window::subscription)
         .run_with(Window::new)
 }
 
@@ -206,6 +210,11 @@ impl Window {
                 Task::none()
             }
             Message::Import => Task::perform(dialog::import_zip_path(), Message::SetImport),
+            Message::WebsocketEvent(event) => {
+                let websocket::Event::Selected(x) = event;
+                println!("websocket: {x}");
+                Task::none()
+            }
         }
     }
 
@@ -297,5 +306,9 @@ impl Window {
         }
 
         container(content).padding(10).center_x(Length::Fill).into()
+    }
+
+    fn subscription(&self) -> Subscription<Message> {
+        Subscription::run(connect).map(Message::WebsocketEvent)
     }
 }
