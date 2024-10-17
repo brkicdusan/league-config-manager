@@ -1,16 +1,19 @@
-use std::sync::{Arc, Mutex, MutexGuard};
+use std::sync::{Arc, Mutex};
 
 use iced::{
     futures::{channel::mpsc::Sender, SinkExt, Stream},
     stream,
 };
 use league_client::client;
-use serde_json::{Number, Value};
+use serde_json::Value;
 use tokio::runtime;
 
 #[derive(Debug, Clone)]
 pub(crate) enum Event {
-    Selected(i32),
+    Selected(u32),
+    Connected,
+    Disconnected,
+    Retrying(u32),
 }
 
 pub fn connect() -> impl Stream<Item = Event> {
@@ -24,21 +27,26 @@ pub fn connect() -> impl Stream<Item = Event> {
         let output = Arc::new(Mutex::new(output));
 
         loop {
-            // let _ = output.send(Event::Selected(20)).await;
-
             let output = Arc::clone(&output);
             let mut sender = output.lock().unwrap().to_owned();
 
             rt.spawn(async move {
-                let _res = lcu(sender).await;
+                let _ = lcu(sender).await;
             })
             .await
             .unwrap();
 
-            // TODO: retry message preko ovoga i povecaj delay
-            println!("retrying...");
-            rt.spawn(async {
-                tokio::time::sleep(tokio::time::Duration::from_secs(10)).await;
+            let output = Arc::clone(&output);
+            let mut sender = output.lock().unwrap().to_owned();
+
+            sender.send(Event::Disconnected).await;
+
+            rt.spawn(async move {
+                let delay = 10;
+                for i in (1..=delay).rev() {
+                    sender.send(Event::Retrying(i)).await;
+                    tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
+                }
             })
             .await
             .unwrap();
@@ -58,18 +66,16 @@ async fn lcu(mut output: Sender<Event>) -> Result<(), Box<dyn std::error::Error 
     let msg = serde_json::to_string(&msg).unwrap();
 
     speaker.send(msg).await.expect("should have sent a message");
-    let mut cnt = 1;
-    let _ = output.send(Event::Selected(cnt)).await;
+    let _ = output.send(Event::Connected).await;
     while let Ok(msg) = speaker.reader.recv_async().await {
         let msg = msg.into_message();
         if msg.uri == "/lol-champ-select/v1/current-champion" {
-            let x=  match &msg.data {
-                Value::Number(num) => num.as_i64(),
-                _ => Some(-5)
-            }.unwrap();
-            println!("{:?}", msg.data);
-            let _ = output.send(Event::Selected(x as i32)).await;
-            cnt += 1;
+            let x = match &msg.data {
+                Value::Number(num) => num.as_u64(),
+                _ => Some(0),
+            }
+            .unwrap();
+            let _ = output.send(Event::Selected(x as u32)).await;
         }
     }
     Ok(())

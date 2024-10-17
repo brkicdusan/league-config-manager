@@ -60,7 +60,9 @@ struct Window {
     error: Option<Error>,
     profiles: Vec<Profile>,
     success: Option<String>,
-    champion_id: i32
+    champion_id: Option<u32>,
+    connected: bool,
+    retry_in: Option<u32>,
 }
 
 impl Window {
@@ -106,7 +108,9 @@ impl Window {
                 error: err,
                 profiles,
                 success: None,
-                champion_id: -1
+                champion_id: None,
+                connected: false,
+                retry_in: None,
             },
             Task::none(),
         )
@@ -213,8 +217,20 @@ impl Window {
             }
             Message::Import => Task::perform(dialog::import_zip_path(), Message::SetImport),
             Message::WebsocketEvent(event) => {
-                let websocket::Event::Selected(x) = event;
-                self.champion_id = x;
+                match event {
+                    websocket::Event::Selected(x) => {
+                        self.champion_id = Some(x);
+                    }
+                    websocket::Event::Connected => {
+                        self.connected = true;
+                        self.retry_in = None;
+                    }
+                    websocket::Event::Disconnected => {
+                        self.connected = false;
+                        self.retry_in = None;
+                    }
+                    websocket::Event::Retrying(t) => self.retry_in = Some(t),
+                }
                 Task::none()
             }
         }
@@ -270,9 +286,27 @@ impl Window {
             .align_y(iced::Alignment::Center)
             .spacing(10);
 
-        let champion_text = text(self.champion_id.to_string()).class(theme::Text::Error);
+        let champion_text = text(if self.connected {
+            let mut txt = "Connected.".to_string();
+            if self.champion_id.is_some() {
+                txt = format!("Selected champion: {}", self.champion_id.unwrap());
+            }
+            txt
+        } else {
+            let mut txt = "Disconnected.".to_string();
+            if self.retry_in.is_some() {
+                txt = format!(
+                    "{} {} {} seconds...",
+                    txt,
+                    "Retrying in",
+                    self.retry_in.unwrap()
+                );
+            }
+            txt
+        });
 
-        let mut content = column![location, cb, Rule::horizontal(0), profiles, champion_text].spacing(10);
+        let mut content =
+            column![location, cb, Rule::horizontal(0), profiles, champion_text].spacing(10);
 
         if let Some(e) = &self.error {
             let error_str = match e {
