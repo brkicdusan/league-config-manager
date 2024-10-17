@@ -1,4 +1,4 @@
-#![windows_subsystem = "windows"]
+//#![windows_subsystem = "windows"]
 
 mod cfg;
 mod colors;
@@ -60,6 +60,7 @@ struct Window {
     error: Option<Error>,
     profiles: Vec<Profile>,
     success: Option<String>,
+    champion_id: i32
 }
 
 impl Window {
@@ -105,6 +106,7 @@ impl Window {
                 error: err,
                 profiles,
                 success: None,
+                champion_id: -1
             },
             Task::none(),
         )
@@ -212,7 +214,7 @@ impl Window {
             Message::Import => Task::perform(dialog::import_zip_path(), Message::SetImport),
             Message::WebsocketEvent(event) => {
                 let websocket::Event::Selected(x) = event;
-                println!("websocket: {x}");
+                self.champion_id = x;
                 Task::none()
             }
         }
@@ -268,7 +270,9 @@ impl Window {
             .align_y(iced::Alignment::Center)
             .spacing(10);
 
-        let mut content = column![location, cb, Rule::horizontal(0), profiles].spacing(10);
+        let champion_text = text(self.champion_id.to_string()).class(theme::Text::Error);
+
+        let mut content = column![location, cb, Rule::horizontal(0), profiles, champion_text].spacing(10);
 
         if let Some(e) = &self.error {
             let error_str = match e {
