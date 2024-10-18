@@ -75,7 +75,9 @@ async fn lcu(mut output: Sender<Event>) -> Result<(), Box<dyn std::error::Error 
                 _ => Some(0),
             }
             .unwrap();
-            let _ = output.send(Event::Selected(x as u32)).await;
+            if x > 0 {
+                let _ = output.send(Event::Selected(x as u32)).await;
+            }
         }
     }
     Ok(())
