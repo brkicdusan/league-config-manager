@@ -17,8 +17,7 @@ pub(crate) enum Event {
 }
 
 pub fn connect() -> impl Stream<Item = Event> {
-    println!("test print");
-    stream::channel(100, |mut output| async move {
+    stream::channel(100, |output| async move {
         let rt = runtime::Builder::new_multi_thread()
             .enable_all()
             .build()
@@ -28,7 +27,7 @@ pub fn connect() -> impl Stream<Item = Event> {
 
         loop {
             let output = Arc::clone(&output);
-            let mut sender = output.lock().unwrap().to_owned();
+            let sender = output.lock().unwrap().to_owned();
 
             rt.spawn(async move {
                 let _ = lcu(sender).await;
