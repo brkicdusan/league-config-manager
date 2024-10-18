@@ -39,12 +39,12 @@ pub fn connect() -> impl Stream<Item = Event> {
             let output = Arc::clone(&output);
             let mut sender = output.lock().unwrap().to_owned();
 
-            sender.send(Event::Disconnected).await;
+            let _ = sender.send(Event::Disconnected).await;
 
             rt.spawn(async move {
                 let delay = 10;
                 for i in (1..=delay).rev() {
-                    sender.send(Event::Retrying(i)).await;
+                    let _ = sender.send(Event::Retrying(i)).await;
                     tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
                 }
             })

@@ -1,6 +1,7 @@
 //#![windows_subsystem = "windows"]
 
 mod cfg;
+mod champion;
 mod colors;
 mod config;
 mod dialog;
@@ -12,6 +13,7 @@ mod websocket;
 mod widget;
 
 use cfg::Cfg;
+use champion::get_champion_name_from_id;
 use config::Config;
 use dialog::export_zip_path;
 use error::Error;
@@ -118,6 +120,7 @@ impl Window {
 
     fn update(&mut self, message: Message) -> Task<Message> {
         self.success = None;
+        // TODO: fix errors disappearing
         self.error = None;
 
         match message {
@@ -219,7 +222,11 @@ impl Window {
             Message::WebsocketEvent(event) => {
                 match event {
                     websocket::Event::Selected(x) => {
-                        self.champion_id = Some(x);
+                        self.champion_id = None;
+
+                        if x > 0 {
+                            self.champion_id = Some(x);
+                        }
                     }
                     websocket::Event::Connected => {
                         self.connected = true;
@@ -289,7 +296,10 @@ impl Window {
         let champion_text = text(if self.connected {
             let mut txt = "Connected.".to_string();
             if self.champion_id.is_some() {
-                txt = format!("Selected champion: {}", self.champion_id.unwrap());
+                txt = format!(
+                    "Selected champion: {}",
+                    get_champion_name_from_id(self.champion_id.unwrap()).unwrap()
+                );
             }
             txt
         } else {
