@@ -19,4 +19,5 @@ pub(crate) enum Message {
     Import,
     SetImport(Result<PathBuf, Error>),
     WebsocketEvent(websocket::Event),
+    PickListChange(String, &'static str),
 }

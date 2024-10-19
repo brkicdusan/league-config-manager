@@ -226,6 +226,40 @@ impl Window {
 
                         if x > 0 {
                             self.champion_id = Some(x);
+
+                            let mut def = None;
+                            let mut flag = true;
+
+                            for p in &self.profiles {
+                                let id = p.get_champion();
+                                if id.is_none() {
+                                    continue;
+                                }
+
+                                let id = id.unwrap();
+
+                                if id == 0 {
+                                    def = Some(p);
+                                }
+
+                                if id == x {
+                                    flag = false;
+
+                                    if let Some(cfg) = &self.cfg {
+                                        p.copy_files(cfg);
+                                    }
+
+                                    break;
+                                }
+                            }
+
+                            if let Some(prof) = def {
+                                if flag {
+                                    if let Some(cfg) = &self.cfg {
+                                        prof.copy_files(cfg);
+                                    }
+                                }
+                            }
                         }
                     }
                     websocket::Event::Connected => {
@@ -238,6 +272,26 @@ impl Window {
                     }
                     websocket::Event::Retrying(t) => self.retry_in = Some(t),
                 }
+                Task::none()
+            }
+            Message::PickListChange(profile_name, option) => {
+                let profiles = &self.profiles;
+
+                for profile in profiles {
+                    if profile.get_selected() == option && profile.get_name() != &profile_name {
+                        self.error = Error::ChampionTaken.into();
+                        return Task::none();
+                    }
+                }
+
+                let profile = self
+                    .profiles
+                    .iter_mut()
+                    .find(|p| p.get_name() == &profile_name)
+                    .unwrap();
+
+                profile.set_selected(option);
+
                 Task::none()
             }
         }
@@ -330,6 +384,7 @@ impl Window {
                 Error::NameTaken => "Name is taken",
                 Error::ZipExport => "Error exporting profile",
                 Error::ZipImport => "Error importing profile",
+                Error::ChampionTaken => "Another profile already handles that champion",
             };
 
             let error_text = text(error_str).size(20).class(theme::Text::Error);

@@ -1,5 +1,7 @@
 use crate::colors;
-use iced::widget::{button, checkbox, container, rule, text, text_input};
+use iced::overlay::menu;
+use iced::widget::scrollable::Rail;
+use iced::widget::{button, checkbox, container, pick_list, rule, scrollable, text, text_input};
 use iced::{application, Background, Border, Color};
 
 #[derive(Debug, Clone, Copy, Default)]
@@ -235,6 +237,84 @@ impl rule::Catalog for Theme {
             width: 1,
             radius: 1.into(),
             fill_mode: rule::FillMode::Full,
+        }
+    }
+}
+
+impl scrollable::Catalog for Theme {
+    type Class<'a> = ();
+
+    fn default<'a>() -> Self::Class<'a> {}
+
+    fn style(&self, _class: &Self::Class<'_>, _status: scrollable::Status) -> scrollable::Style {
+        let border = Border {
+            color: colors::BG,
+            width: 0.0,
+            radius: 0.into(),
+        };
+
+        let rail = Rail {
+            background: None,
+            border,
+            scroller: scrollable::Scroller {
+                color: colors::GOLD,
+                border,
+            },
+        };
+
+        scrollable::Style {
+            container: container::Style::default(),
+            vertical_rail: rail,
+            horizontal_rail: rail,
+            gap: None,
+        }
+    }
+}
+
+impl menu::Catalog for Theme {
+    type Class<'a> = ();
+
+    fn default<'a>() -> <Self as menu::Catalog>::Class<'a> {}
+
+    fn style(&self, _class: &<Self as menu::Catalog>::Class<'_>) -> menu::Style {
+        let border = Border {
+            color: colors::BG,
+            width: 0.0,
+            radius: 0.into(),
+        };
+
+        menu::Style {
+            background: colors::BG.into(),
+            border,
+            text_color: colors::TEXT,
+            selected_text_color: colors::GOLD,
+            selected_background: colors::GOLD_LIGHT.into(),
+        }
+    }
+}
+
+impl pick_list::Catalog for Theme {
+    type Class<'a> = ();
+
+    fn default<'a>() -> <Self as pick_list::Catalog>::Class<'a> {}
+
+    fn style(
+        &self,
+        _class: &<Self as pick_list::Catalog>::Class<'_>,
+        _status: pick_list::Status,
+    ) -> pick_list::Style {
+        let border = Border {
+            color: colors::BG,
+            width: 0.0,
+            radius: 0.into(),
+        };
+
+        pick_list::Style {
+            text_color: colors::TEXT,
+            placeholder_color: colors::TEXT,
+            handle_color: colors::TEXT,
+            background: colors::BG.into(),
+            border,
         }
     }
 }

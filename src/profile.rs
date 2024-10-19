@@ -1,15 +1,20 @@
 use std::{
     error::Error,
-    fs::{self, File},
-    io::{Read, Write},
-    path::PathBuf,
+    fs::{self, File, OpenOptions},
+    io::{BufReader, Read, Write},
+    path::{Path, PathBuf},
 };
 
-use iced::widget::{container, row, text, text_input, tooltip, Row};
+use iced::{
+    widget::{column, container, pick_list, row, text, text_input, tooltip},
+    Element, Length,
+};
+use serde::{Deserialize, Serialize};
 use zip::{write::SimpleFileOptions, CompressionMethod, ZipArchive, ZipWriter};
 
 use crate::{
     cfg::Cfg,
+    champion::{get_champion_id_from_name, get_champion_name_from_id, get_champion_name_list},
     colors,
     config::get_config_dir,
     error,
@@ -23,6 +28,39 @@ pub struct Profile {
     name: String,
     editing: bool,
     edit_name: String,
+    champion: Option<u32>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct Settings {
+    champion: Option<u32>,
+}
+
+impl Settings {
+    pub fn from_path(path: &Path) -> Settings {
+        let settings_file = OpenOptions::new()
+            .read(true)
+            .write(true)
+            .create(true)
+            .truncate(false)
+            .open(path)
+            .expect("Can't open config file");
+        let reader = BufReader::new(settings_file);
+        let settings: Settings =
+            serde_json::from_reader(reader).unwrap_or_else(|_| Settings { champion: None });
+        settings
+    }
+
+    pub fn export(&self, path: &Path) {
+        let settings_file = OpenOptions::new()
+            .write(true)
+            .create(true)
+            .truncate(true)
+            .open(path)
+            .expect("Can't open config file");
+        let writer = std::io::BufWriter::new(settings_file);
+        serde_json::to_writer(writer, self).expect("Couldn't write the config");
+    }
 }
 
 impl Profile {
@@ -57,6 +95,7 @@ impl Profile {
             name,
             editing: false,
             edit_name: String::from(""),
+            champion: None,
         }
     }
 
@@ -98,6 +137,7 @@ impl Profile {
             name,
             editing: false,
             edit_name: String::from(""),
+            champion: None,
         })
     }
 
@@ -112,23 +152,29 @@ impl Profile {
             let entry = entry.unwrap().path();
             if entry.is_dir() {
                 let name = entry.file_name().unwrap().to_str().unwrap().to_string();
+
+                let settings_path = entry.join("settings.json");
+
+                let settings = Settings::from_path(&settings_path);
+
                 profiles.push(Self {
                     name,
                     editing: false,
                     edit_name: String::from(""),
+                    champion: settings.champion,
                 })
             }
         }
         profiles
     }
 
-    fn path_to(&self) -> PathBuf {
+    fn get_path(&self) -> PathBuf {
         let dir = get_config_dir();
         dir.join(&self.name)
     }
 
     pub fn delete(&self) {
-        let dir = self.path_to();
+        let dir = self.get_path();
         fs::remove_dir_all(dir).unwrap();
     }
 
@@ -136,12 +182,12 @@ impl Profile {
         cfg.set_readonly(false);
 
         fs::copy(
-            self.path_to().join(cfg.game.file_name().unwrap()),
+            self.get_path().join(cfg.game.file_name().unwrap()),
             &cfg.game,
         )
         .unwrap();
         fs::copy(
-            self.path_to().join(cfg.settings.file_name().unwrap()),
+            self.get_path().join(cfg.settings.file_name().unwrap()),
             &cfg.settings,
         )
         .unwrap();
@@ -202,7 +248,59 @@ impl Profile {
         Ok(zip_file_path)
     }
 
-    pub fn get_item(&self, cfg: &Option<Cfg>) -> Row<Message, Theme> {
+    pub fn get_champion(&self) -> Option<u32> {
+        self.champion
+    }
+
+    pub fn options_list() -> Vec<&'static str> {
+        let mut options = vec!["Disabled", "Default"];
+        options.append(&mut get_champion_name_list());
+        options
+    }
+
+    fn set_settings(&self) {
+        let settings = Settings {
+            champion: self.champion,
+        };
+
+        let path = self.get_path().join("settings.json");
+
+        settings.export(&path);
+    }
+
+    pub fn get_selected(&self) -> &'static str {
+        if self.champion.is_none() {
+            return "Disabled";
+        }
+        let champ = self.champion.unwrap();
+        if champ == 0 {
+            return "Default";
+        }
+        get_champion_name_from_id(champ).unwrap()
+    }
+
+    pub fn set_selected(&mut self, option: &str) {
+        let champion = match option {
+            "Disabled" => None,
+            "Default" => Some(0),
+            _ => get_champion_id_from_name(option),
+        };
+
+        self.champion = champion;
+
+        self.set_settings();
+    }
+
+    fn champion_row(&self) -> Element<Message, Theme> {
+        let txt = text("Swap when this champion is selected:").width(Length::Fill);
+        let options = Self::options_list();
+        let pl = pick_list(options, Some(self.get_selected()), |s| {
+            Message::PickListChange(self.name.clone(), s)
+        });
+        row![txt, pl].into()
+    }
+
+    pub fn get_item(&self, cfg: &Option<Cfg>) -> Element<Message, Theme> {
         let del_btn = tooltip(
             icon_btn(
                 trash_icon(),
@@ -286,6 +384,6 @@ impl Profile {
         profile_row = profile_row.push(export_btn);
         profile_row = profile_row.push(del_btn);
 
-        profile_row
+        column![profile_row, self.champion_row()].into()
     }
 }

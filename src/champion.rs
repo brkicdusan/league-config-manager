@@ -18,6 +18,10 @@ pub(crate) fn get_champion_id_from_name(name: &str) -> Option<u32> {
     None
 }
 
+pub(crate) fn get_champion_name_list() -> Vec<&'static str> {
+    list::LIST.map(|x| x.1).into()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
