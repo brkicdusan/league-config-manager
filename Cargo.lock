@@ -2110,8 +2110,7 @@ dependencies = [
 [[package]]
 name = "league-client"
 version = "0.2.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1d3365c20fe1b270e0d5ac404144f6c468c3648ea0107ea8e70f98a3c65beca8"
+source = "git+https://github.com/brkicdusan/league-client-fork#c2a6df21542780d9a71a5432a544ca0042b019d0"
 dependencies = [
  "base64 0.22.1",
  "flume",
