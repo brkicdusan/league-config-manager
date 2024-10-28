@@ -47,7 +47,7 @@ impl Settings {
             .expect("Can't open config file");
         let reader = BufReader::new(settings_file);
         let settings: Settings =
-            serde_json::from_reader(reader).unwrap_or_else(|_| Settings { champion: None });
+            serde_json::from_reader(reader).unwrap_or(Settings { champion: None });
         settings
     }
 

@@ -7,6 +7,8 @@ pub(crate) enum Message {
     FindLocation,
     SetLocation(Result<PathBuf, Error>),
     SetReadonly(bool),
+
+    //Profile
     AddProfile,
     RemoveProfile(String),
     UseProfile(Profile),
@@ -18,6 +20,7 @@ pub(crate) enum Message {
     SetExport(Result<(PathBuf, Profile), Error>),
     Import,
     SetImport(Result<PathBuf, Error>),
-    WebsocketEvent(websocket::Event),
     PickListChange(String, &'static str),
+
+    WebsocketEvent(websocket::Event),
 }
