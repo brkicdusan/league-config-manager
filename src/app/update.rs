@@ -48,7 +48,7 @@ impl App {
             }
             Message::RemoveProfile(s) => {
                 for (i, p) in self.profiles.iter().enumerate() {
-                    if p.get_name() == &s {
+                    if p.name() == &s {
                         p.delete();
                         self.profiles.remove(i);
                         break;
@@ -60,7 +60,7 @@ impl App {
                 if let Some(cfg) = &self.cfg {
                     prof.copy_files(cfg);
                     cfg.set_readonly(self.readonly);
-                    self.success = Some(format!("Using \"{}\"", prof.get_name()))
+                    self.success = Some(format!("Using \"{}\"", prof.name()))
                 }
                 Task::none()
             }
@@ -75,7 +75,7 @@ impl App {
                 if let Err(e) = prof.edit_confirm() {
                     self.error = Some(e);
                 } else {
-                    self.success = Some(format!("Changed name to {}", &prof.get_name()));
+                    self.success = Some(format!("Changed name to {}", &prof.name()));
                     self.error = None;
                 }
                 Task::none()
@@ -87,7 +87,7 @@ impl App {
             }
             Message::OnChange(name, new_name) => {
                 let prof = self.get_profile_from_name(&name).unwrap();
-                prof.edit_change(new_name);
+                prof.set_edit_name(new_name);
                 Task::none()
             }
             Message::Export(profile) => Task::perform(export_zip_path(profile), Message::SetExport),
@@ -123,10 +123,9 @@ impl App {
                             self.champion_id = Some(x);
 
                             let mut profile =
-                                self.profiles.iter().find(|p| p.get_champion() == Some(x));
+                                self.profiles.iter().find(|p| p.champion() == &Some(x));
                             if profile.is_none() {
-                                profile =
-                                    self.profiles.iter().find(|p| p.get_champion() == Some(0));
+                                profile = self.profiles.iter().find(|p| p.champion() == &Some(0));
                             }
 
                             if let Some(prof) = profile {
@@ -152,8 +151,8 @@ impl App {
                 let profiles = &self.profiles;
 
                 for profile in profiles {
-                    if profile.get_selected() == option
-                        && profile.get_name() != &profile_name
+                    if profile.selected() == option
+                        && profile.name() != &profile_name
                         && option != "Disabled"
                     {
                         self.error = Error::ChampionTaken.into();
@@ -164,7 +163,7 @@ impl App {
                 let profile = self
                     .profiles
                     .iter_mut()
-                    .find(|p| p.get_name() == &profile_name)
+                    .find(|p| p.name() == &profile_name)
                     .unwrap();
 
                 profile.set_selected(option);

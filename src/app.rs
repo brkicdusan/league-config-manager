@@ -50,7 +50,7 @@ impl App {
     }
 
     fn get_profile_from_name(&mut self, name: &String) -> Option<&mut Profile> {
-        self.profiles.iter_mut().find(|p| p.get_name().eq(name))
+        self.profiles.iter_mut().find(|p| p.name().eq(name))
     }
 }
 
@@ -60,7 +60,7 @@ impl App {
         let mut cfg = None;
         let mut readonly = false;
         let mut err = None;
-        let profiles = Profile::get_profiles();
+        let profiles = Profile::profiles();
         match Cfg::from_config(&conf) {
             Ok(c) => {
                 readonly = c.get_readonly();
