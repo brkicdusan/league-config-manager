@@ -35,9 +35,9 @@ pub(crate) struct App {
 
 impl App {
     fn set_cfg(&mut self, location: &Path) -> Option<Error> {
-        match Cfg::new(location) {
+        match Cfg::from_path(location) {
             Ok(cfg) => {
-                self.readonly = cfg.get_readonly();
+                self.readonly = cfg.readonly();
                 self.cfg = Some(cfg);
                 self.error = None;
             }
@@ -63,7 +63,7 @@ impl App {
         let profiles = Profile::profiles();
         match Cfg::from_config(&conf) {
             Ok(c) => {
-                readonly = c.get_readonly();
+                readonly = c.readonly();
                 cfg = Some(c);
             }
             Err(e) => err = Some(e),

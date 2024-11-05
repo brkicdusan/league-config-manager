@@ -12,7 +12,7 @@ pub struct Cfg {
 }
 
 impl Cfg {
-    pub fn new(folder_path: &Path) -> Result<Cfg, Error> {
+    pub fn from_path(folder_path: &Path) -> Result<Cfg, Error> {
         let folder_path = folder_path.join("Config");
         let game = folder_path.join("game.cfg");
         let settings = folder_path.join("PersistedSettings.json");
@@ -23,13 +23,13 @@ impl Cfg {
     }
 
     pub fn from_config(config: &Config) -> Result<Cfg, Error> {
-        if let Some(c) = &config.get_cfg_path() {
-            return Self::new(c);
+        if let Some(c) = &config.path() {
+            return Self::from_path(c);
         }
         Err(Error::MissingPath)
     }
 
-    pub fn get_readonly(&self) -> bool {
+    pub fn readonly(&self) -> bool {
         let f = File::open(&self.game).expect("File should always exist");
         f.metadata().unwrap().permissions().readonly()
     }

@@ -13,7 +13,7 @@ use zip::{write::SimpleFileOptions, CompressionMethod, ZipArchive, ZipWriter};
 use crate::{
     cfg::Cfg,
     champion::{get_champion_id_from_name, get_champion_name_from_id, get_champion_name_list},
-    config::get_config_dir,
+    config::Config,
     error,
 };
 
@@ -52,7 +52,7 @@ impl Profile {
 impl Profile {
     pub fn new(cfg: &Cfg) -> Self {
         let name = Profile::gen_name().unwrap();
-        let mut dir = get_config_dir();
+        let mut dir = Config::get_config_dir();
         dir.push(&name);
         fs::create_dir_all(&dir).unwrap();
         fs::copy(&cfg.game, dir.join(cfg.game.file_name().unwrap())).unwrap();
@@ -78,7 +78,7 @@ impl Profile {
         }
 
         let mut archive = ZipArchive::new(zip_file)?;
-        let extraction_dir = get_config_dir().join(&name);
+        let extraction_dir = Config::get_config_dir().join(&name);
         std::fs::create_dir(&extraction_dir)?;
 
         for i in 0..archive.len() {
@@ -114,7 +114,7 @@ impl Profile {
     }
 
     pub fn profiles() -> Vec<Profile> {
-        let config_dir = get_config_dir();
+        let config_dir = Config::get_config_dir();
         let mut profiles: Vec<Self> = vec![];
         for entry in fs::read_dir(config_dir).unwrap() {
             let entry = entry.unwrap().path();
@@ -137,7 +137,7 @@ impl Profile {
     }
 
     fn path(&self) -> PathBuf {
-        let dir = get_config_dir();
+        let dir = Config::get_config_dir();
         dir.join(&self.name)
     }
 
@@ -169,7 +169,7 @@ impl Profile {
             }
         }
         self.editing = false;
-        let dir = get_config_dir();
+        let dir = Config::get_config_dir();
         fs::rename(dir.join(&self.name), dir.join(&self.edit_name)).unwrap();
         self.name.clone_from(&self.edit_name);
         Ok(())
@@ -189,7 +189,7 @@ impl Profile {
 
         let mut zip_writer = ZipWriter::new(zip_file);
 
-        let dir = get_config_dir().join(&self.name);
+        let dir = Config::get_config_dir().join(&self.name);
 
         let files_to_compress: Vec<PathBuf> =
             vec![dir.join("game.cfg"), dir.join("PersistedSettings.json")];
