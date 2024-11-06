@@ -1,5 +1,6 @@
 use crate::*;
 
+use iced::Alignment::Center;
 use widget::{cancel_icon, confirm_icon};
 
 use iced::widget::text_input;
@@ -20,7 +21,7 @@ use crate::widget::icon_btn;
 
 use iced::widget::tooltip;
 
-use crate::cfg::Cfg;
+use crate::game_settings::GameSettings;
 
 use iced::widget::pick_list;
 
@@ -44,10 +45,10 @@ impl Profile {
         let pl = pick_list(options, Some(self.selected()), |s| {
             Message::PickListChange(self.name.clone(), s)
         });
-        row![txt, pl].into()
+        row![txt, pl].align_y(Center).into()
     }
 
-    pub fn get_item(&self, cfg: &Option<Cfg>) -> Element<Message, Theme> {
+    pub fn get_item(&self, cfg: &Option<GameSettings>) -> Element<Message, Theme> {
         let del_btn = tooltip(
             icon_btn(
                 trash_icon(),
@@ -59,10 +60,12 @@ impl Profile {
         )
         .class(theme::Container::Tooltip);
 
-        let mut use_msg = None;
-        if cfg.is_some() {
-            use_msg = Some(Message::UseProfile(self.clone()));
-        }
+        let use_msg = if cfg.is_some() {
+            Some(Message::UseProfile(self.clone()))
+        } else {
+            None
+        };
+
         let use_btn = tooltip(
             icon_btn(use_icon(), use_msg, colors::BLUE),
             "Use this profile",
@@ -113,11 +116,10 @@ impl Profile {
         };
 
         let mut profile_row = row![].spacing(10).align_y(iced::Alignment::Center);
+
         if !self.editing {
             profile_row = profile_row.push(text(&self.name).width(iced::Length::Fill));
-        }
-
-        if self.editing {
+        } else {
             profile_row = profile_row.push(
                 text_input("", &self.edit_name)
                     .padding(10)
@@ -131,6 +133,6 @@ impl Profile {
         profile_row = profile_row.push(export_btn);
         profile_row = profile_row.push(del_btn);
 
-        column![profile_row, self.champion_row()].into()
+        column![profile_row, self.champion_row()].spacing(10).into()
     }
 }

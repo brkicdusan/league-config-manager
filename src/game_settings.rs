@@ -6,23 +6,23 @@ use std::fs::File;
 use std::path::Path;
 use std::path::PathBuf;
 
-pub struct Cfg {
+pub struct GameSettings {
     pub game: PathBuf,
     pub settings: PathBuf,
 }
 
-impl Cfg {
-    pub fn from_path(folder_path: &Path) -> Result<Cfg, Error> {
+impl GameSettings {
+    pub fn from_path(folder_path: &Path) -> Result<GameSettings, Error> {
         let folder_path = folder_path.join("Config");
         let game = folder_path.join("game.cfg");
         let settings = folder_path.join("PersistedSettings.json");
         if game.exists() && settings.exists() {
-            return Ok(Cfg { game, settings });
+            return Ok(GameSettings { game, settings });
         }
         Err(Error::WrongPath)
     }
 
-    pub fn from_config(config: &Config) -> Result<Cfg, Error> {
+    pub fn from_config(config: &Config) -> Result<GameSettings, Error> {
         if let Some(c) = &config.path() {
             return Self::from_path(c);
         }

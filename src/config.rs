@@ -7,7 +7,7 @@ use std::{
 use directories::ProjectDirs;
 use serde::{Deserialize, Serialize};
 
-use crate::cfg::Cfg;
+use crate::game_settings::GameSettings;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Config {
@@ -85,7 +85,7 @@ impl Config {
     fn try_cfg() -> Option<PathBuf> {
         let folders = ["C:\\Riot Games\\League of Legends"].map(PathBuf::from);
         for folder in folders {
-            let cfg = Cfg::from_path(&folder);
+            let cfg = GameSettings::from_path(&folder);
             if cfg.is_ok() {
                 return Some(folder);
             }

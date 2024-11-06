@@ -287,7 +287,7 @@ impl menu::Catalog for Theme {
             background: colors::BG.into(),
             border,
             text_color: colors::TEXT,
-            selected_text_color: colors::GOLD,
+            selected_text_color: colors::TEXT,
             selected_background: colors::GOLD_LIGHT.into(),
         }
     }

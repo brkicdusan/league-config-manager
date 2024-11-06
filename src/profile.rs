@@ -11,10 +11,10 @@ use std::{
 use zip::{write::SimpleFileOptions, CompressionMethod, ZipArchive, ZipWriter};
 
 use crate::{
-    cfg::Cfg,
     champion::{get_champion_id_from_name, get_champion_name_from_id, get_champion_name_list},
     config::Config,
     error,
+    game_settings::GameSettings,
 };
 
 #[derive(Debug, Clone)]
@@ -50,7 +50,7 @@ impl Profile {
 
 //constructors
 impl Profile {
-    pub fn new(cfg: &Cfg) -> Self {
+    pub fn new(cfg: &GameSettings) -> Self {
         let name = Profile::gen_name().unwrap();
         let mut dir = Config::get_config_dir();
         dir.push(&name);
@@ -146,7 +146,7 @@ impl Profile {
         fs::remove_dir_all(dir).unwrap();
     }
 
-    pub fn copy_files(&self, cfg: &Cfg) {
+    pub fn copy_files(&self, cfg: &GameSettings) {
         cfg.set_readonly(false);
 
         fs::copy(self.path().join(cfg.game.file_name().unwrap()), &cfg.game).unwrap();

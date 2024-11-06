@@ -1,12 +1,12 @@
 #![windows_subsystem = "windows"]
 
 mod app;
-mod cfg;
 mod champion;
 mod colors;
 mod config;
 mod dialog;
 mod error;
+mod game_settings;
 mod message;
 mod profile;
 mod theme;

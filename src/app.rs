@@ -17,13 +17,13 @@ use profile::Profile;
 
 use error::Error;
 
-use cfg::Cfg;
+use game_settings::GameSettings;
 
 use config::Config;
 
 pub(crate) struct App {
     config: Config,
-    cfg: Option<Cfg>,
+    cfg: Option<GameSettings>,
     readonly: bool,
     error: Option<Error>,
     profiles: Vec<Profile>,
@@ -35,7 +35,7 @@ pub(crate) struct App {
 
 impl App {
     fn set_cfg(&mut self, location: &Path) -> Option<Error> {
-        match Cfg::from_path(location) {
+        match GameSettings::from_path(location) {
             Ok(cfg) => {
                 self.readonly = cfg.readonly();
                 self.cfg = Some(cfg);
@@ -61,7 +61,7 @@ impl App {
         let mut readonly = false;
         let mut err = None;
         let profiles = Profile::profiles();
-        match Cfg::from_config(&conf) {
+        match GameSettings::from_config(&conf) {
             Ok(c) => {
                 readonly = c.readonly();
                 cfg = Some(c);
