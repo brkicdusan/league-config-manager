@@ -41,12 +41,17 @@ impl Config {
             .open(config_path)
             .expect("Can't open config file");
         let reader = BufReader::new(config_file);
-        let config: Config = serde_json::from_reader(reader).unwrap_or_else(|_| {
+        let mut config: Config = serde_json::from_reader(reader).unwrap_or_else(|_| {
             let cfg_path = Self::try_cfg();
             let config = Config { path: cfg_path };
             config.write_config();
             config
         });
+        if let Some(path) = &config.path {
+            if GameSettings::from_path(path).is_err() {
+                config.path = Self::try_cfg();
+            }
+        }
         config
     }
 
@@ -85,6 +90,7 @@ impl Config {
     fn try_cfg() -> Option<PathBuf> {
         let folders = ["C:\\Riot Games\\League of Legends"].map(PathBuf::from);
         for folder in folders {
+            let folder = folder.join("Config");
             let cfg = GameSettings::from_path(&folder);
             if cfg.is_ok() {
                 return Some(folder);
