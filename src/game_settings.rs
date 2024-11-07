@@ -13,7 +13,6 @@ pub struct GameSettings {
 
 impl GameSettings {
     pub fn from_path(folder_path: &Path) -> Result<GameSettings, Error> {
-        let folder_path = folder_path.join("Config");
         let game = folder_path.join("game.cfg");
         let settings = folder_path.join("PersistedSettings.json");
         if game.exists() && settings.exists() {

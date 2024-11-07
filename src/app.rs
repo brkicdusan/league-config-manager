@@ -35,7 +35,8 @@ pub(crate) struct App {
 
 impl App {
     fn set_cfg(&mut self, location: &Path) -> Option<Error> {
-        match GameSettings::from_path(location) {
+        let location = location.join("Config");
+        match GameSettings::from_path(&location) {
             Ok(cfg) => {
                 self.readonly = cfg.readonly();
                 self.cfg = Some(cfg);
