@@ -23,6 +23,8 @@ pub struct Profile {
     editing: bool,
     edit_name: String,
     champion: Option<u32>,
+    game_settings: GameSettings,
+    last_link: String,
 }
 
 //name gen
@@ -57,12 +59,33 @@ impl Profile {
         fs::create_dir_all(&dir).unwrap();
         fs::copy(&cfg.game, dir.join(cfg.game.file_name().unwrap())).unwrap();
         fs::copy(&cfg.settings, dir.join(cfg.settings.file_name().unwrap())).unwrap();
+        let game_settings = GameSettings::from_path(&dir).unwrap();
         Self {
             name,
             editing: false,
             edit_name: String::from(""),
             champion: None,
+            last_link: "".to_string(),
+            game_settings,
         }
+    }
+
+    pub fn from_string(game_settings_string: String) -> Result<Self, crate::error::Error> {
+        let name = Profile::gen_name().unwrap();
+        let mut dir = Config::get_config_dir();
+        dir.push(&name);
+        fs::create_dir_all(&dir).unwrap();
+
+        let game_settings = GameSettings::from_string(&dir, game_settings_string)?;
+
+        Ok(Self {
+            name,
+            editing: false,
+            edit_name: String::from(""),
+            champion: None,
+            last_link: "".to_string(),
+            game_settings,
+        })
     }
 
     pub fn from_zip(zip_file_path: &PathBuf) -> Result<Self, Box<dyn Error>> {
@@ -99,11 +122,15 @@ impl Profile {
             std::io::copy(&mut file, &mut output_file)?;
         }
 
+        let game_settings = GameSettings::from_path(&extraction_dir).unwrap();
+
         Ok(Self {
             name,
             editing: false,
             edit_name: String::from(""),
             champion: None,
+            last_link: "".to_string(),
+            game_settings,
         })
     }
 }
@@ -125,11 +152,15 @@ impl Profile {
 
                 let settings = settings::Settings::from_path(&settings_path);
 
+                let game_settings = GameSettings::from_path(&entry).unwrap();
+
                 profiles.push(Self {
                     name,
                     editing: false,
                     edit_name: String::from(""),
                     champion: settings.champion,
+                    last_link: settings.last_link,
+                    game_settings,
                 })
             }
         }
@@ -172,6 +203,7 @@ impl Profile {
         let dir = Config::get_config_dir();
         fs::rename(dir.join(&self.name), dir.join(&self.edit_name)).unwrap();
         self.name.clone_from(&self.edit_name);
+        self.game_settings.update_paths(&dir.join(&self.name));
         Ok(())
     }
 
@@ -222,9 +254,15 @@ impl Profile {
         options
     }
 
+    pub fn set_link(&mut self, link: String) {
+        self.last_link = link;
+        self.save_settings();
+    }
+
     fn save_settings(&self) {
         let settings = settings::Settings {
             champion: self.champion,
+            last_link: self.last_link.clone(),
         };
 
         let path = self.path().join("settings.json");

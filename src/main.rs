@@ -8,15 +8,19 @@ mod dialog;
 mod error;
 mod game_settings;
 mod message;
+mod paste;
 mod profile;
 mod theme;
 mod websocket;
 mod widget;
 
+use std::sync::Arc;
+
 use crate::theme::Theme;
 
 use app::App;
 use iced::{advanced::graphics::image::image_rs::ImageFormat, window, Size};
+use tokio::sync::Mutex;
 
 fn main() -> Result<(), iced::Error> {
     iced::application("League Config Manager", App::update, App::view)

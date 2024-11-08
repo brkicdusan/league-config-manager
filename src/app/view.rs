@@ -40,8 +40,17 @@ impl App {
 
         let connection_status = self.view_connection();
 
-        let mut content =
-            column![top_bar, Rule::horizontal(0), profiles, connection_status].spacing(10);
+        let import_bar = self.view_import();
+
+        let mut content = column![
+            top_bar,
+            Rule::horizontal(0),
+            profiles,
+            connection_status,
+            Rule::horizontal(0),
+            import_bar
+        ]
+        .spacing(10);
 
         content = content.push_maybe(self.view_error());
 
@@ -113,6 +122,7 @@ impl App {
                 Error::ZipExport => "Error exporting profile",
                 Error::ZipImport => "Error importing profile",
                 Error::ChampionTaken => "Another profile already handles that champion",
+                Error::Import => "Error importing a profile",
             };
 
             let error_text = text(error_str).size(20).class(theme::Text::Error);
@@ -124,6 +134,29 @@ impl App {
             return Some(error_container);
         }
         None
+    }
+
+    fn view_import(&self) -> iced::Element<'_, Message, Theme> {
+        let text_inp = text_input("Import link", &self.link)
+            .padding(10)
+            .on_input(Message::ChangeLink)
+            .on_paste(Message::ChangeLink);
+
+        let import_button = tooltip(
+            icon_btn(
+                add_icon(),
+                Some(Message::FetchLink(self.link.clone())),
+                colors::BLUE,
+            ),
+            "Copy link",
+            tooltip::Position::Bottom,
+        )
+        .class(theme::Container::Tooltip);
+
+        row![text_inp, import_button]
+            .spacing(10)
+            .align_y(iced::Alignment::Center)
+            .into()
     }
 
     fn view_top(&self) -> iced::widget::Column<'_, Message, Theme> {

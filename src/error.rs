@@ -7,4 +7,5 @@ pub enum Error {
     ZipExport,
     ZipImport,
     ChampionTaken,
+    Import,
 }

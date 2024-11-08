@@ -9,6 +9,7 @@ use std::path::Path;
 #[derive(Serialize, Deserialize, Debug)]
 pub(crate) struct Settings {
     pub(crate) champion: Option<u32>,
+    pub(crate) last_link: String,
 }
 
 impl Settings {
@@ -21,8 +22,10 @@ impl Settings {
             .open(path)
             .expect("Can't open profile settings file");
         let reader = BufReader::new(settings_file);
-        let settings: Settings =
-            serde_json::from_reader(reader).unwrap_or(Settings { champion: None });
+        let settings: Settings = serde_json::from_reader(reader).unwrap_or(Settings {
+            champion: None,
+            last_link: "".to_string(),
+        });
         settings
     }
 

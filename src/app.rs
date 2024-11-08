@@ -21,6 +21,7 @@ use game_settings::GameSettings;
 
 use config::Config;
 
+#[derive(Default)]
 pub(crate) struct App {
     config: Config,
     cfg: Option<GameSettings>,
@@ -31,6 +32,8 @@ pub(crate) struct App {
     champion_id: Option<u32>,
     connected: bool,
     retry_in: Option<u32>,
+    client: Arc<Mutex<reqwest::Client>>,
+    link: String,
 }
 
 impl App {
@@ -62,6 +65,8 @@ impl App {
         let mut readonly = false;
         let mut err = None;
         let profiles = Profile::profiles();
+        let client = Arc::new(Mutex::new(reqwest::Client::new()));
+
         match GameSettings::from_config(&conf) {
             Ok(c) => {
                 readonly = c.readonly();
@@ -80,6 +85,8 @@ impl App {
                 champion_id: None,
                 connected: false,
                 retry_in: None,
+                client,
+                ..App::default()
             },
             Task::none(),
         )

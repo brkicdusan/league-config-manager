@@ -1,7 +1,7 @@
 use std::{
     fs::{self, OpenOptions},
     io::BufReader,
-    path::PathBuf,
+    path::{Path, PathBuf},
 };
 
 use directories::ProjectDirs;
@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::game_settings::GameSettings;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 pub struct Config {
     path: Option<PathBuf>,
 }
@@ -47,8 +47,9 @@ impl Config {
             config.write_config();
             config
         });
+        // TODO: ovo nije dobro uopste uradi kad budes odspavao
         if let Some(path) = &config.path {
-            if GameSettings::from_path(path).is_err() {
+            if GameSettings::from_path(&Self::game_settings_path(path)).is_err() {
                 config.path = Self::try_cfg();
             }
         }
@@ -97,5 +98,9 @@ impl Config {
             }
         }
         None
+    }
+
+    pub fn game_settings_path(path: &Path) -> PathBuf {
+        path.join("Config")
     }
 }

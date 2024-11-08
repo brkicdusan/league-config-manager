@@ -3,7 +3,7 @@ use crate::*;
 use iced::Alignment::Center;
 use widget::{cancel_icon, confirm_icon};
 
-use iced::widget::text_input;
+use iced::widget::{horizontal_space, text_input, Row};
 
 use crate::widget::edit_icon;
 
@@ -25,7 +25,7 @@ use crate::game_settings::GameSettings;
 
 use iced::widget::pick_list;
 
-use iced::Length;
+use iced::{padding, Length};
 
 use iced::widget::text;
 
@@ -39,13 +39,58 @@ use super::Profile;
 
 //view
 impl Profile {
-    pub(crate) fn champion_row(&self) -> Element<Message, Theme> {
+    fn champion_row(&self) -> Element<Message, Theme> {
         let txt = text("Swap when this champion is selected:").width(Length::Fill);
         let options = Self::options_list();
         let pl = pick_list(options, Some(self.selected()), |s| {
             Message::PickListChange(self.name.clone(), s)
         });
-        row![txt, pl].align_y(Center).into()
+        row![txt, pl]
+            .padding(padding::top(5))
+            .align_y(Center)
+            .into()
+    }
+
+    fn share_row(&self) -> Row<Message, Theme> {
+        let mut txt = self.last_link.clone();
+        if self.last_link.is_empty() {
+            txt = "No link generated".to_string();
+        }
+        let txt = tooltip(
+            text(txt),
+            "Last generated profile link",
+            tooltip::Position::Bottom,
+        )
+        .class(theme::Container::Tooltip);
+
+        let copy_btn = tooltip(
+            icon_btn(
+                text("C").into(),
+                Some(Message::CopyLink(self.last_link.clone())),
+                colors::BLUE,
+            ),
+            "Copy link",
+            tooltip::Position::Bottom,
+        )
+        .class(theme::Container::Tooltip);
+
+        let gen_btn = tooltip(
+            icon_btn(
+                text("G").into(),
+                Some(Message::GenerateLink(
+                    self.game_settings.to_paste_string(),
+                    self.name().clone(),
+                )),
+                colors::BLUE,
+            ),
+            "Generate link",
+            tooltip::Position::Bottom,
+        )
+        .class(theme::Container::Tooltip);
+
+        row![txt, horizontal_space(), copy_btn, gen_btn]
+            .align_y(Center)
+            .spacing(10)
     }
 
     pub fn get_item(&self, cfg: &Option<GameSettings>) -> Element<Message, Theme> {
@@ -133,6 +178,8 @@ impl Profile {
         profile_row = profile_row.push(export_btn);
         profile_row = profile_row.push(del_btn);
 
-        column![profile_row, self.champion_row()].spacing(10).into()
+        column![profile_row, self.champion_row(), self.share_row()]
+            .spacing(10)
+            .into()
     }
 }

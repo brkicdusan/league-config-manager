@@ -4,7 +4,7 @@ use dialog::export_zip_path;
 
 use profile::Profile;
 
-use iced::Task;
+use iced::{clipboard, Task};
 
 use message::Message;
 
@@ -168,6 +168,56 @@ impl App {
 
                 profile.set_selected(option);
 
+                Task::none()
+            }
+            Message::CopyLink(link) => clipboard::write::<Message>(link),
+            // TODO: add .chain to task above later
+            Message::GenerateLink(content, profile_name) => {
+                Task::perform(paste::post(Arc::clone(&self.client), content), move |res| {
+                    if let Ok(res) = res {
+                        Message::PostLink(res, profile_name.clone())
+                    } else {
+                        Message::PostLinkError(res.err().unwrap().to_string())
+                    }
+                })
+            }
+            Message::PostLink(res, profile_name) => {
+                let profile = self
+                    .profiles
+                    .iter_mut()
+                    .find(|p| p.name() == &profile_name)
+                    .unwrap();
+
+                profile.set_link(res);
+
+                Task::none()
+            }
+            Message::PostLinkError(_err) => {
+                // println!("{err}");
+                Task::none()
+            }
+            Message::ChangeLink(new_link) => {
+                self.link = new_link;
+                Task::none()
+            }
+            Message::FetchLink(link) => Task::perform(
+                paste::get(Arc::clone(&self.client), link),
+                move |res| match res {
+                    Ok(content) => Message::AddProfileFromString(content),
+                    Err(_err) => Message::FetchError(Error::Import),
+                },
+            ),
+            Message::AddProfileFromString(content) => {
+                let new_profile = Profile::from_string(content);
+                if new_profile.is_err() {
+                    self.error = new_profile.err();
+                    return Task::none();
+                }
+                self.profiles.push(new_profile.unwrap());
+                Task::none()
+            }
+            Message::FetchError(error) => {
+                self.error = Some(error);
                 Task::none()
             }
         }

@@ -22,5 +22,16 @@ pub(crate) enum Message {
     SetImport(Result<PathBuf, Error>),
     PickListChange(String, &'static str),
 
+    CopyLink(String),
+    GenerateLink(String, String),
+    PostLink(String, String),
+    PostLinkError(String),
+
+    ChangeLink(String),
+
+    FetchLink(String),
+    AddProfileFromString(String),
+    FetchError(Error),
+
     WebsocketEvent(websocket::Event),
 }

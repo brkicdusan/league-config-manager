@@ -190,7 +190,10 @@ impl text_input::Catalog for Theme {
                 width: 1.0,
                 radius: 5.into(),
             },
-            placeholder: text_color,
+            placeholder: Color {
+                a: text_color.a * 0.5,
+                ..text_color
+            },
             icon: text_color,
             value: text_color,
             selection: colors::BLUE_DARK,
