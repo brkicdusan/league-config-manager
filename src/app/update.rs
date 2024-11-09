@@ -14,9 +14,13 @@ use super::App;
 
 impl App {
     pub(crate) fn update(&mut self, message: Message) -> Task<Message> {
-        self.success = None;
-        // TODO: fix errors disappearing
-        self.error = None;
+        match message {
+            Message::WebsocketEvent(websocket::Event::Retrying(_)) => {}
+            _ => {
+                self.error = None;
+                self.success = None;
+            }
+        };
 
         match message {
             Message::FindLocation => {
