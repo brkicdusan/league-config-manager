@@ -1,3 +1,5 @@
+use ini::Ini;
+
 use crate::config::Config;
 
 use crate::error::Error;
@@ -93,5 +95,25 @@ impl GameSettings {
         f.read_to_string(&mut res).expect("Should always be valid");
 
         res
+    }
+
+    fn load_ini(&self) -> Result<Ini, ini::Error> {
+        Ini::load_from_file(&self.game)
+    }
+
+    fn save_ini(&self, ini: Ini) -> Result<(), ini::Error> {
+        ini.write_to_file(&self.game)?;
+        Ok(())
+    }
+
+    pub fn reset_resolution(&self) -> Result<(), ini::Error> {
+        let mut ini = self.load_ini()?;
+
+        ini.delete_from(Some("General"), "Width");
+        ini.delete_from(Some("General"), "Height");
+
+        self.save_ini(ini)?;
+
+        Ok(())
     }
 }

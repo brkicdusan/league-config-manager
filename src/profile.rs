@@ -77,6 +77,8 @@ impl Profile {
         fs::create_dir_all(&dir).unwrap();
 
         let game_settings = GameSettings::from_string(&dir, game_settings_string)?;
+        // TODO: handle error
+        let _ = game_settings.reset_resolution();
 
         Ok(Self {
             name,
@@ -123,6 +125,8 @@ impl Profile {
         }
 
         let game_settings = GameSettings::from_path(&extraction_dir).unwrap();
+        // TODO: handle error
+        let _ = game_settings.reset_resolution();
 
         Ok(Self {
             name,
