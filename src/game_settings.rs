@@ -26,7 +26,8 @@ impl GameSettings {
 
     pub fn from_config(config: &Config) -> Result<GameSettings, Error> {
         if let Some(c) = &config.path() {
-            return Self::from_path(c);
+            let c = c.join("Config");
+            return Self::from_path(&c);
         }
         Err(Error::MissingPath)
     }

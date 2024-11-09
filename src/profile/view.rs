@@ -93,7 +93,7 @@ impl Profile {
             .spacing(10)
     }
 
-    pub fn get_item(&self, cfg: &Option<GameSettings>) -> Element<Message, Theme> {
+    pub fn view_profile(&self, cfg: &Option<GameSettings>) -> Element<Message, Theme> {
         let del_btn = tooltip(
             icon_btn(
                 trash_icon(),

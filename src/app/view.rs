@@ -63,7 +63,7 @@ impl App {
         let mut profiles = column![].align_x(iced::Alignment::Center).spacing(15);
 
         for p in &self.profiles {
-            profiles = profiles.push(p.get_item(&self.cfg));
+            profiles = profiles.push(p.view_profile(&self.cfg));
             profiles = profiles.push(Rule::horizontal(0));
         }
         profiles
