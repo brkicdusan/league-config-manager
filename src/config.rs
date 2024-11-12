@@ -91,8 +91,8 @@ impl Config {
     fn try_cfg() -> Option<PathBuf> {
         let folders = ["C:\\Riot Games\\League of Legends"].map(PathBuf::from);
         for folder in folders {
-            let folder = folder.join("Config");
-            let cfg = GameSettings::from_path(&folder);
+            let folder_new = folder.join("Config");
+            let cfg = GameSettings::from_path(&folder_new);
             if cfg.is_ok() {
                 return Some(folder);
             }
