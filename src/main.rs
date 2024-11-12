@@ -28,8 +28,8 @@ fn main() -> Result<(), iced::Error> {
         .font(include_bytes!("../fonts/icons.ttf").as_slice())
         .window(window::Settings {
             size: Size {
-                width: 500f32,
-                height: 600f32,
+                width: 600f32,
+                height: 800f32,
             },
             icon: window::icon::from_file_data(
                 include_bytes!("../assets/mobile-logo.png"),

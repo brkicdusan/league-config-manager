@@ -122,7 +122,7 @@ impl App {
                 Error::ZipExport => "Error exporting profile",
                 Error::ZipImport => "Error importing profile",
                 Error::ChampionTaken => "Another profile already handles that champion",
-                Error::Import => "Error importing a profile",
+                Error::Import => "Error importing/generating a profile. Try again in a few seconds.",
             };
 
             let error_text = text(error_str).size(20).class(theme::Text::Error);

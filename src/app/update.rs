@@ -174,9 +174,13 @@ impl App {
 
                 Task::none()
             }
-            Message::CopyLink(link) => clipboard::write::<Message>(link),
+            Message::CopyLink(link) => {
+                self.success = Some("Copied link!".into());
+                clipboard::write::<Message>(link)
+            }
             // TODO: add .chain to task above later
             Message::GenerateLink(content, profile_name) => {
+                self.success = Some("Generated link!".into());
                 Task::perform(paste::post(Arc::clone(&self.client), content), move |res| {
                     if let Ok(res) = res {
                         Message::PostLink(res, profile_name.clone())
