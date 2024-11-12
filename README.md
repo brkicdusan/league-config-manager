@@ -65,6 +65,13 @@ Press the plus button in the top row to add settings profile.
 
 **IMPORTANT:** This only saves the settings from the time you pressed the button, any changes after won't be saved to the profile, you will have to add a new profile to save them.
 
+### Link sharing
+
+Under every profile you have the button to (G)enerate  and (C)opy the link for that profile 
+
+*NOTE:* The link expires are after 7 days
+**IMPORANT:** If you get an error importing from link or generating a link you can try again after 1 second if the error persists you can report it here on github, the current solution for sharing links is not meant to serve a lot of people as it uses a rate-limited service
+
 ### Importing settings
 
 Press the import button in the top row to import settings from a `.zip` file.
@@ -76,6 +83,11 @@ Press the export button on the profile that you want to export.
 ### Changing profile
 
 To use settings from a profile press the use button (second button from the left)
+
+### Auto-swap
+
+To use a specific settings profile for a champion, under that profile select the champion you want to auto-swap on
+**IMPORTANT:** Don't forget to set `Default` profile so you can swap back
 
 ## Troubleshooting
 
