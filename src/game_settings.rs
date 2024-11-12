@@ -107,12 +107,16 @@ impl GameSettings {
     }
 
     pub fn reset_resolution(&self) -> Result<(), ini::Error> {
+        let readonly = self.readonly();
+        self.set_readonly(false);
         let mut ini = self.load_ini()?;
 
         ini.delete_from(Some("General"), "Width");
         ini.delete_from(Some("General"), "Height");
 
         self.save_ini(ini)?;
+
+        self.set_readonly(readonly);
 
         Ok(())
     }
