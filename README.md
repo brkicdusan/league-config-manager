@@ -14,9 +14,11 @@ League config manager is a tool that helps manage League of Legends settings.
   - [Finding League of Legends folder](#finding-league-of-legends-folder)
   - [Locking settings](#locking-settings)
   - [Adding current settings as a profile](#adding-current-settings-as-a-profile)
+  - [Link sharing](#link-sharing)
   - [Importing settings](#importing-settings)
   - [Exporting settings](#exporting-settings)
   - [Changing profile](#changing-profile)
+  - [Auto-swap](#auto-swap)
 - [Troubleshooting](#troubleshooting)
 - [Contributing / Feedback](#contributing--feedback)
 
@@ -26,13 +28,14 @@ This tool aims to help new players get good settings easier, as well as help vet
 
 Current features:
 
-- Importing/exporting settings
 - Ability to add multiple settings profiles
+- Importing/exporting settings
+- Generating and sharing a link for a settings profile
+- Auto-swap settings per champion
 - Locking settings making them reset after every game and same for every account that logs in on that computer
 
 Planned features:
 
-- Easier sharing of profiles (generating a url for a setting profile and importing from a url)
 - Pro player/streamer settings website
 - Better design of the app
 
@@ -67,9 +70,9 @@ Press the plus button in the top row to add settings profile.
 
 ### Link sharing
 
-Under every profile you have the button to (G)enerate  and (C)opy the link for that profile 
+Under every profile you have the button to (G)enerate and (C)opy the link for that profile
 
-*NOTE:* The link expires are after 7 days
+_NOTE:_ The link expires are after 7 days
 **IMPORANT:** If you get an error importing from link or generating a link you can try again after 1 second if the error persists you can report it here on github, the current solution for sharing links is not meant to serve a lot of people as it uses a rate-limited service
 
 ### Importing settings
